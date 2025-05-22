@@ -132,10 +132,10 @@ int stop_cache(uint16_t cache_id, int flush);
 // #define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wi|wo"
 // #define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only"
 // #define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only"
-#define CAS_CLI_HELP_START_CACHE_MODES "wt|wb|wa|pt|wi|wo|mfwa|mfwb|mfwt"
-#define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wi|wo|mfwa|mfwb|mfwt"
-#define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through"
-#define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through"
+#define CAS_CLI_HELP_START_CACHE_MODES "wt|wb|wa|pt|wi|wo|mfwa|mfwb|mfwt|mfcwt"
+#define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wi|wo|mfwa|mfwb|mfwt|mfcwt"
+#define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through, Multi-Factor Changed Write-Through"
+#define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Invalidate, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through, Multi-Factor Changed Write-Through"
 /*========== [Orthus FLAG END] ==========*/
 #else
 /*========== [Orthus FLAG BEGIN] ==========*/
@@ -143,10 +143,10 @@ int stop_cache(uint16_t cache_id, int flush);
 // #define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wo"
 // #define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only"
 // #define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only"
-#define CAS_CLI_HELP_START_CACHE_MODES "wt|wb|wa|pt|wo|mfwa|mfwb|mfwt"
-#define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wo|mfwa|mfwb|mfwt"
-#define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through"
-#define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through"
+#define CAS_CLI_HELP_START_CACHE_MODES "wt|wb|wa|pt|wo|mfwa|mfwb|mfwt|mfcwt"
+#define CAS_CLI_HELP_SET_CACHE_MODES "wt|wb|wa|pt|wo|mfwa|mfwb|mfwt|mfcwt"
+#define CAS_CLI_HELP_START_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through, Multi-Factor Changed Write-Through"
+#define CAS_CLI_HELP_SET_CACHE_MODES_FULL "Write-Through, Write-Back, Write-Around, Pass-Through, Write-Only, Multi-Factor Write-Around, Multi-Factor Write-Back, Multi-Factor Write-Through, Multi-Factor Changed Write-Through"
 /*========== [Orthus FLAG END] ==========*/
 #endif
 

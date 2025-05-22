@@ -334,7 +334,8 @@ int handle_start()
 	/*========== [Orthus FLAG BEGIN] ==========*/
 	if (command_args_values.cache_mode == ocf_cache_mode_mfwa
 		|| command_args_values.cache_mode == ocf_cache_mode_mfwb
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwt) {
+		|| command_args_values.cache_mode == ocf_cache_mode_mfwt
+		|| command_args_values.cache_mode == ocf_cache_mode_mfcwt) {
 		cas_printf(LOG_ERR, "Do not start cache in a multi-factor mode\n"
 			                "Instead, start in default mode and then set mode to a"
 			                " multi-factor mode\n");
@@ -1080,7 +1081,8 @@ int handle_set_cache_mode()
 	/*========== [Orthus FLAG BEGIN] ==========*/
 	if (command_args_values.cache_mode == ocf_cache_mode_mfwa
 		|| command_args_values.cache_mode == ocf_cache_mode_mfwb
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwt) {
+		|| command_args_values.cache_mode == ocf_cache_mode_mfwt
+		|| command_args_values.cache_mode == ocf_cache_mode_mfcwt) {
 		cas_printf(LOG_INFO, "You are switching to a multi-factor mode. Please be sure"
 			                 " that a monitor thread has been started, otherwise this"
 			                 " mode functions exactly the same as its non-mf counterpart\n"

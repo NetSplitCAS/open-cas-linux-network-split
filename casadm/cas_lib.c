@@ -258,6 +258,7 @@ static struct name_to_val_mapping cache_mode_names[] = {
 	{ .short_name = "mfwa", .long_name = "Multi-Factor Write-Around", .value = ocf_cache_mode_mfwa },
 	{ .short_name = "mfwb", .long_name = "Multi-Factor Write-Back", .value = ocf_cache_mode_mfwb },
 	{ .short_name = "mfwt", .long_name = "Multi-Factor Write-Through", .value = ocf_cache_mode_mfwt },
+	{ .short_name = "mfcwt", .long_name = "Multi-Factor Changed Write-Through", .value = ocf_cache_mode_mfcwt },
 	/*========== [Orthus FLAG END] ==========*/
 	{ NULL }
 };
