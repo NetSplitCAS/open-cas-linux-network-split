@@ -1,7 +1,7 @@
 /*
-* Copyright(c) 2012-2020 Intel Corporation
-* SPDX-License-Identifier: BSD-3-Clause-Clear
-*/
+ * Copyright(c) 2012-2020 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,15 +27,16 @@
 #define HELP_HEADER OCF_PREFIX_LONG
 
 #define WRONG_DEVICE_ERROR "Specified caching device '%s' is not supported.\n"
-#define NOT_BLOCK_ERROR    "Please use block device file.\n"
+#define NOT_BLOCK_ERROR "Please use block device file.\n"
 
 extern cas_printf_t cas_printf;
 
-#define PARAM_TYPE_CORE		1
-#define PARAM_TYPE_CACHE	2
+#define PARAM_TYPE_CORE 1
+#define PARAM_TYPE_CACHE 2
 
 /* struct with all the commands parameters/flags with default values */
-struct command_args{
+struct command_args
+{
 	int force;
 	int cache_id;
 	int core_id;
@@ -55,48 +56,51 @@ struct command_args{
 	int update_path;
 	int detach;
 	int no_flush;
-	const char* cache_device;
-	const char* core_device;
+	const char *cache_device;
+	const char *core_device;
 	uint32_t params_type;
 	uint32_t params_count;
 	bool verbose;
 };
 
 static struct command_args command_args_values = {
-		.force = 0,
-		.cache_id = OCF_CACHE_ID_INVALID,
-		.core_id = OCF_CORE_ID_INVALID,
-		.state = CACHE_INIT_NEW,
-		.cache_mode = ocf_cache_mode_default,
-		.stats_filters = STATS_FILTER_DEFAULT,
-		.output_format = OUTPUT_FORMAT_DEFAULT,
-		.io_class_id = OCF_IO_CLASS_INVALID,
-		.line_size = ocf_cache_line_size_default,
-		.cache_state_flush = UNDEFINED, /* three state logic: YES NO UNDEFINED */
-		.flush_data = 1,
-		.cleaning_policy_type = 0,
-		.promotion_policy_type = 0,
-		.script_subcmd = -1,
-		.try_add = false,
-		.update_path = false,
-		.detach = false,
-		.no_flush = false,
-		.cache_device = NULL,
-		.core_device = NULL,
+	.force = 0,
+	.cache_id = OCF_CACHE_ID_INVALID,
+	.core_id = OCF_CORE_ID_INVALID,
+	.state = CACHE_INIT_NEW,
+	.cache_mode = ocf_cache_mode_default,
+	.stats_filters = STATS_FILTER_DEFAULT,
+	.output_format = OUTPUT_FORMAT_DEFAULT,
+	.io_class_id = OCF_IO_CLASS_INVALID,
+	.line_size = ocf_cache_line_size_default,
+	.cache_state_flush = UNDEFINED, /* three state logic: YES NO UNDEFINED */
+	.flush_data = 1,
+	.cleaning_policy_type = 0,
+	.promotion_policy_type = 0,
+	.script_subcmd = -1,
+	.try_add = false,
+	.update_path = false,
+	.detach = false,
+	.no_flush = false,
+	.cache_device = NULL,
+	.core_device = NULL,
 
-		.params_type = 0,
-		.params_count = 0,
-		.verbose = false,
+	.params_type = 0,
+	.params_count = 0,
+	.verbose = false,
 };
 
-int validate_device_name(const char *dev_name) {
-	if (validate_dev(dev_name)) {
+int validate_device_name(const char *dev_name)
+{
+	if (validate_dev(dev_name))
+	{
 		cas_printf(LOG_ERR, "Cache creation aborted, %s entry exists in /etc/fstab. Please remove it!\n",
-				dev_name);
+				   dev_name);
 		return FAILURE;
 	}
 
-	if (strnlen(dev_name, MAX_STR_LEN) >= MAX_STR_LEN) {
+	if (strnlen(dev_name, MAX_STR_LEN) >= MAX_STR_LEN)
+	{
 		cas_printf(LOG_ERR, "Illegal device %s\n", dev_name);
 		return FAILURE;
 	}
@@ -106,54 +110,78 @@ int validate_device_name(const char *dev_name) {
 
 int command_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "cache-id")) {
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN,
-				OCF_CACHE_ID_MAX) == FAILURE)
+							 OCF_CACHE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "core-id")) {
+	}
+	else if (!strcmp(opt, "core-id"))
+	{
 		if (validate_str_num(arg[0], "core id", 0, OCF_CORE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.core_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "core-device")) {
+	}
+	else if (!strcmp(opt, "core-device"))
+	{
 		if (validate_device_name(arg[0]) == FAILURE)
 			return FAILURE;
 
 		command_args_values.core_device = arg[0];
-	} else if (!strcmp(opt, "cache-device")) {
+	}
+	else if (!strcmp(opt, "cache-device"))
+	{
 		if (validate_device_name(arg[0]) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_device = arg[0];
-	} else if (!strcmp(opt, "no-data-flush")) {
+	}
+	else if (!strcmp(opt, "no-data-flush"))
+	{
 		command_args_values.flush_data = 0;
-	} else if (!strcmp(opt, "output-format")) {
-		command_args_values.output_format
-			= validate_str_output_format(arg[0]);
+	}
+	else if (!strcmp(opt, "output-format"))
+	{
+		command_args_values.output_format = validate_str_output_format(arg[0]);
 
 		if (OUTPUT_FORMAT_INVALID == command_args_values.output_format)
 			return FAILURE;
-	} else if (!strcmp(opt, "cleaning-policy-type")) {
-		command_args_values.cleaning_policy_type = validate_str_cln_policy((const char*)arg[0]);
+	}
+	else if (!strcmp(opt, "cleaning-policy-type"))
+	{
+		command_args_values.cleaning_policy_type = validate_str_cln_policy((const char *)arg[0]);
 
 		if (command_args_values.cleaning_policy_type < 0)
 			return FAILURE;
-	} else if (!strcmp(opt, "eviction-policy")) {
-		command_args_values.eviction_policy_type = validate_str_ev_policy((const char*)arg[0]);
+	}
+	else if (!strcmp(opt, "eviction-policy"))
+	{
+		command_args_values.eviction_policy_type = validate_str_ev_policy((const char *)arg[0]);
 
 		if (command_args_values.eviction_policy_type < 0)
 			return FAILURE;
-	} else if (!strcmp(opt, "try-add")) {
+	}
+	else if (!strcmp(opt, "try-add"))
+	{
 		command_args_values.try_add = true;
-	} else if (!strcmp(opt, "update-path")) {
+	}
+	else if (!strcmp(opt, "update-path"))
+	{
 		command_args_values.update_path = true;
-	} else if (!strcmp(opt, "detach")) {
+	}
+	else if (!strcmp(opt, "detach"))
+	{
 		command_args_values.detach = true;
-	} else if (!strcmp(opt, "no-flush")) {
+	}
+	else if (!strcmp(opt, "no-flush"))
+	{
 		command_args_values.no_flush = true;
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -162,17 +190,22 @@ int command_handle_option(char *opt, const char **arg)
 
 int remove_core_command_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "cache-id")){
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN, OCF_CACHE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "core-id")){
+	}
+	else if (!strcmp(opt, "core-id"))
+	{
 		if (validate_str_num(arg[0], "core id", 0, OCF_CORE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.core_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "force")){
+	}
+	else if (!strcmp(opt, "force"))
+	{
 		command_args_values.force = 1;
 	}
 
@@ -181,8 +214,10 @@ int remove_core_command_handle_option(char *opt, const char **arg)
 
 int core_pool_remove_command_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "device")) {
-		if (strnlen_s(arg[0], MAX_STR_LEN) >= MAX_STR_LEN) {
+	if (!strcmp(opt, "device"))
+	{
+		if (strnlen_s(arg[0], MAX_STR_LEN) >= MAX_STR_LEN)
+		{
 			cas_printf(LOG_ERR, "Illegal device %s\n", arg[0]);
 			return FAILURE;
 		}
@@ -195,32 +230,43 @@ int core_pool_remove_command_handle_option(char *opt, const char **arg)
 
 int start_cache_command_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "force")) {
+	if (!strcmp(opt, "force"))
+	{
 		command_args_values.force = 1;
-	} else if (!strcmp(opt, "cache-id")) {
+	}
+	else if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN, OCF_CACHE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "load")) {
+	}
+	else if (!strcmp(opt, "load"))
+	{
 		command_args_values.state = CACHE_INIT_LOAD;
-	} else if (!strcmp(opt, "cache-device")) {
-		if(validate_device_name(arg[0]) == FAILURE)
+	}
+	else if (!strcmp(opt, "cache-device"))
+	{
+		if (validate_device_name(arg[0]) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_device = arg[0];
-	} else if (!strcmp(opt, "cache-mode")) {
+	}
+	else if (!strcmp(opt, "cache-mode"))
+	{
 		command_args_values.cache_mode =
-				validate_str_cache_mode((const char*)arg[0]);
+			validate_str_cache_mode((const char *)arg[0]);
 
 		if (command_args_values.cache_mode < 0)
 			return FAILURE;
-	} else if (!strcmp(opt, "cache-line-size")) {
+	}
+	else if (!strcmp(opt, "cache-line-size"))
+	{
 		if (validate_str_num_sbd(arg[0], "cache line size", ocf_cache_line_size_min / KiB,
-				ocf_cache_line_size_max / KiB) == FAILURE)
+								 ocf_cache_line_size_max / KiB) == FAILURE)
 			return FAILURE;
 
-		command_args_values.line_size = atoi((const char*)arg[0]) * KiB;
+		command_args_values.line_size = atoi((const char *)arg[0]) * KiB;
 	}
 
 	return 0;
@@ -229,7 +275,7 @@ int start_cache_command_handle_option(char *opt, const char **arg)
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define CACHE_ID_DESC "Identifier of cache instance <"xstr(OCF_CACHE_ID_MIN)"-"xstr(OCF_CACHE_ID_MAX)">"
+#define CACHE_ID_DESC "Identifier of cache instance <" xstr(OCF_CACHE_ID_MIN) "-" xstr(OCF_CACHE_ID_MAX) ">"
 #define CACHE_ID_DESC_LONG CACHE_ID_DESC " (if not provided, the first available number will be used)"
 
 /* OCF_CORE_ID_MAX is defined by arithmetic operations on OCF_CORE_MAX. As a result there is no easy way
@@ -239,48 +285,51 @@ int start_cache_command_handle_option(char *opt, const char **arg)
 #if (_CASADM_CORE_ID_MAX != OCF_CORE_ID_MAX)
 #error "Max core id definitions discrepancy. Please update above definition."
 #endif
-#define CORE_ID_DESC "Identifier of core <0-"xstr(_CASADM_CORE_ID_MAX)"> within given cache instance"
+#define CORE_ID_DESC "Identifier of core <0-" xstr(_CASADM_CORE_ID_MAX) "> within given cache instance"
 
 #define CACHE_DEVICE_DESC "Caching device to be used"
 #define CORE_DEVICE_DESC "Path to core device"
-
 
 static cli_option start_options[] = {
 	{'d', "cache-device", CACHE_DEVICE_DESC, 1, "DEVICE", CLI_OPTION_REQUIRED},
 	{'i', "cache-id", CACHE_ID_DESC_LONG, 1, "ID", 0},
 	{'l', "load", "Load cache metadata from caching device (DANGEROUS - see manual or Admin Guide for details)"},
 	{'f', "force", "Force the creation of cache instance"},
-	{'c', "cache-mode", "Set cache mode from available: {"CAS_CLI_HELP_START_CACHE_MODES"} "CAS_CLI_HELP_START_CACHE_MODES_FULL"; without this parameter Write-Through will be set by default", 1, "NAME"},
-	{'x', "cache-line-size", "Set cache line size in kibibytes: {4,8,16,32,64}[KiB] (default: %d)", 1, "NUMBER",  CLI_OPTION_DEFAULT_INT, 0, 0, ocf_cache_line_size_default / KiB},
-	{0}
-};
+	{'c', "cache-mode", "Set cache mode from available: {" CAS_CLI_HELP_START_CACHE_MODES "} " CAS_CLI_HELP_START_CACHE_MODES_FULL "; without this parameter Write-Through will be set by default", 1, "NAME"},
+	{'x', "cache-line-size", "Set cache line size in kibibytes: {4,8,16,32,64}[KiB] (default: %d)", 1, "NUMBER", CLI_OPTION_DEFAULT_INT, 0, 0, ocf_cache_line_size_default / KiB},
+	{0}};
 
-static int check_fs(const char* device)
+static int check_fs(const char *device)
 {
 	char cache_dev_path[MAX_STR_LEN];
 	static const char fsck_cmd[] = "/sbin/fsck -n %s > /dev/null 2>&1";
 	static const uint32_t size = MAX_STR_LEN + sizeof(fsck_cmd) + 1;
 	char buff[size];
 
-	if (get_dev_path(device, cache_dev_path, sizeof(cache_dev_path))) {
+	if (get_dev_path(device, cache_dev_path, sizeof(cache_dev_path)))
+	{
 		cas_printf(LOG_ERR, "Device does not exist\n");
 		return FAILURE;
 	}
 
 	snprintf(buff, sizeof(buff), fsck_cmd, cache_dev_path);
 
-	if (!system(buff)) {
-		if (command_args_values.force) {
+	if (!system(buff))
+	{
+		if (command_args_values.force)
+		{
 			cas_printf(LOG_INFO, "A filesystem existed on %s. "
-				"Data may have been lost\n",
-				device);
-		} else {
+								 "Data may have been lost\n",
+					   device);
+		}
+		else
+		{
 			/* file system on cache device */
 			cas_printf(LOG_ERR, "A filesystem exists on %s. "
-				"Specify the --force option if you "
-				"wish to add the cache anyway.\n"
-				"Note: this may result in loss of data\n",
-				device);
+								"Specify the --force option if you "
+								"wish to add the cache anyway.\n"
+								"Note: this may result in loss of data\n",
+					   device);
 			return FAILURE;
 		}
 	}
@@ -294,70 +343,73 @@ int handle_start()
 	int status;
 	struct stat device_info;
 
-	if (command_args_values.state == CACHE_INIT_LOAD && command_args_values.force) {
+	if (command_args_values.state == CACHE_INIT_LOAD && command_args_values.force)
+	{
 		cas_printf(LOG_ERR, "Use of 'load' and 'force' simultaneously is forbidden.\n");
 		return FAILURE;
 	}
 
 	cache_device = open(command_args_values.cache_device, O_RDONLY);
 
-	if (cache_device < 0) {
+	if (cache_device < 0)
+	{
 		cas_printf(LOG_ERR, "Couldn't open cache device %s.\n",
-			command_args_values.cache_device);
+				   command_args_values.cache_device);
 		return FAILURE;
 	}
 
-	if (fstat(cache_device, &device_info)) {
+	if (fstat(cache_device, &device_info))
+	{
 		close(cache_device);
 		cas_printf(LOG_ERR, "Could not stat target device:%s!\n",
-			command_args_values.cache_device);
+				   command_args_values.cache_device);
 		return FAILURE;
 	}
 
-	if (!S_ISBLK(device_info.st_mode)) {
+	if (!S_ISBLK(device_info.st_mode))
+	{
 		close(cache_device);
 		cas_printf(LOG_ERR, WRONG_DEVICE_ERROR NOT_BLOCK_ERROR,
-			command_args_values.cache_device);
+				   command_args_values.cache_device);
 		return FAILURE;
 	}
 
-	if (check_fs(command_args_values.cache_device)) {
+	if (check_fs(command_args_values.cache_device))
+	{
 		close(cache_device);
 		return FAILURE;
 	}
 
-	if (close(cache_device) < 0) {
+	if (close(cache_device) < 0)
+	{
 		cas_printf(LOG_ERR, "Couldn't close the cache device.\n");
 		return FAILURE;
 	}
 
 	/*========== [Orthus FLAG BEGIN] ==========*/
-	if (command_args_values.cache_mode == ocf_cache_mode_mfwa
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwb
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwt
-		|| command_args_values.cache_mode == ocf_cache_mode_mfcwt) {
+	if (command_args_values.cache_mode == ocf_cache_mode_mfwa || command_args_values.cache_mode == ocf_cache_mode_mfwb || command_args_values.cache_mode == ocf_cache_mode_mfwt || command_args_values.cache_mode == ocf_cache_mode_mfcwt)
+	{
 		cas_printf(LOG_ERR, "Do not start cache in a multi-factor mode\n"
-			                "Instead, start in default mode and then set mode to a"
-			                " multi-factor mode\n");
+							"Instead, start in default mode and then set mode to a"
+							" multi-factor mode\n");
 		return FAILURE;
 	}
 	/*========== [Orthus FLAG END] ==========*/
 
 	status = start_cache(command_args_values.cache_id,
-			command_args_values.state,
-			command_args_values.cache_device,
-			command_args_values.cache_mode,
-			command_args_values.eviction_policy_type,
-			command_args_values.line_size,
-			command_args_values.force);
+						 command_args_values.state,
+						 command_args_values.cache_device,
+						 command_args_values.cache_mode,
+						 command_args_values.eviction_policy_type,
+						 command_args_values.line_size,
+						 command_args_values.force);
 
 	return status;
 }
 
 static cli_option list_options[] = {
 	{'o', "output-format", "Output format: {table|csv}", 1, "FORMAT", 0},
-	{0}
-};
+	{0}};
 
 int handle_list()
 {
@@ -370,45 +422,56 @@ static cli_option stats_options[] = {
 	{'d', "io-class-id", "Display per IO class statistics", 1, "ID", CLI_OPTION_OPTIONAL_ARG},
 	{'f', "filter", "Apply filters from the following set: {all, conf, usage, req, blk, err}", 1, "FILTER-SPEC"},
 	{'o', "output-format", "Output format: {table|csv}", 1, "FORMAT"},
-	{0}
-};
+	{0}};
 
 int stats_command_handle_option(char *opt, const char **arg)
 {
 	int stats_filters;
 
-	if (!strcmp(opt, "cache-id")) {
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN,
-				OCF_CACHE_ID_MAX) == FAILURE)
+							 OCF_CACHE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "core-id")) {
+	}
+	else if (!strcmp(opt, "core-id"))
+	{
 		if (validate_str_num(arg[0], "core id", 0,
-				     OCF_CORE_ID_MAX) == FAILURE)
+							 OCF_CORE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.core_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "io-class-id")) {
-		if (NULL != arg[0]) {
+	}
+	else if (!strcmp(opt, "io-class-id"))
+	{
+		if (NULL != arg[0])
+		{
 			if (validate_str_num(arg[0], "IO class id",
-				     0, OCF_IO_CLASS_ID_MAX) == FAILURE)
+								 0, OCF_IO_CLASS_ID_MAX) == FAILURE)
 				return FAILURE;
 
 			command_args_values.io_class_id = atoi(arg[0]);
 		}
 		command_args_values.stats_filters |= STATS_FILTER_IOCLASS;
-	} else if (!strcmp(opt, "filter")) {
+	}
+	else if (!strcmp(opt, "filter"))
+	{
 		stats_filters = validate_str_stats_filters(arg[0]);
 		if (STATS_FILTER_INVALID == stats_filters)
 			return FAILURE;
 		stats_filters |= (command_args_values.stats_filters & STATS_FILTER_IOCLASS);
 		command_args_values.stats_filters = stats_filters;
-	} else if (!strcmp(opt, "output-format")) {
+	}
+	else if (!strcmp(opt, "output-format"))
+	{
 		command_args_values.output_format = validate_str_output_format(arg[0]);
 		if (OUTPUT_FORMAT_INVALID == command_args_values.output_format)
 			return FAILURE;
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -418,22 +481,21 @@ int stats_command_handle_option(char *opt, const char **arg)
 int handle_stats()
 {
 	return cache_status(command_args_values.cache_id,
-			    command_args_values.core_id,
-			    command_args_values.io_class_id,
-			    command_args_values.stats_filters,
-			    command_args_values.output_format);
+						command_args_values.core_id,
+						command_args_values.io_class_id,
+						command_args_values.stats_filters,
+						command_args_values.output_format);
 }
 
 static cli_option stop_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'n', "no-data-flush", "Do not flush dirty data (may be dangerous)"},
-	{0}
-};
+	{0}};
 
 int handle_stop()
 {
 	return stop_cache(command_args_values.cache_id,
-			command_args_values.flush_data);
+					  command_args_values.flush_data);
 }
 
 /*****************************************************************************
@@ -441,7 +503,7 @@ int handle_stop()
  *****************************************************************************/
 
 #define SELECT_PARAM(_array, _index) ({ \
-	_array[_index].select = true; \
+	_array[_index].select = true;       \
 })
 
 #define SELECT_CORE_PARAM(_index) \
@@ -451,9 +513,9 @@ int handle_stop()
 	SELECT_PARAM(cas_cache_params, _index)
 
 #define SET_PARAM(_array, _index, _value) ({ \
-	SELECT_PARAM(_array, _index); \
-	_array[_index].value = _value; \
-	command_args_values.params_count++; \
+	SELECT_PARAM(_array, _index);            \
+	_array[_index].value = _value;           \
+	command_args_values.params_count++;      \
 })
 
 #define SET_CORE_PARAM(_index, _value) \
@@ -462,62 +524,73 @@ int handle_stop()
 #define SET_CACHE_PARAM(_index, _value) \
 	SET_PARAM(cas_cache_params, _index, _value)
 
-#define CORE_PARAMS_NS_BEGIN(_name, _desc) { \
-	.name = _name, \
-	.desc = _desc, \
-	.options = { \
-		{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED}, \
-		{'j', "core-id", CORE_ID_DESC, 1, "ID"},
+#define CORE_PARAMS_NS_BEGIN(_name, _desc)                                  \
+	{                                                                       \
+		.name = _name,                                                      \
+		.desc = _desc,                                                      \
+		.options = {                                                        \
+			{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED}, \
+			{'j', "core-id", CORE_ID_DESC, 1, "ID"},
 
 #define CORE_PARAMS_NS_END() \
-		{0}, \
-	},\
-},
+	{0},                     \
+	}                        \
+	,                        \
+	}                        \
+	,
 
-#define GET_CORE_PARAMS_NS(_name, _desc) { \
-	.name = _name, \
-	.desc = _desc, \
-	.options = { \
-		{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED}, \
-		{'j', "core-id", CORE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED}, \
-		{'o', "output-format", "Output format: {table|csv}", 1, "FORMAT"}, \
-	CORE_PARAMS_NS_END()
+#define GET_CORE_PARAMS_NS(_name, _desc)                                       \
+	{                                                                          \
+		.name = _name,                                                         \
+		.desc = _desc,                                                         \
+		.options = {                                                           \
+			{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},    \
+			{'j', "core-id", CORE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},      \
+			{'o', "output-format", "Output format: {table|csv}", 1, "FORMAT"}, \
+			CORE_PARAMS_NS_END()
 
-#define CACHE_PARAMS_NS_BEGIN(_name, _desc) { \
-	.name = _name, \
-	.desc = _desc, \
-	.options = { \
-		{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED}, \
+#define CACHE_PARAMS_NS_BEGIN(_name, _desc) \
+	{                                       \
+		.name = _name,                      \
+		.desc = _desc,                      \
+		.options = {                        \
+			{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 
 #define CACHE_PARAMS_NS_END() \
-		{0}, \
-	},\
-},
+	{0},                      \
+	}                         \
+	,                         \
+	}                         \
+	,
 
-#define GET_CACHE_PARAMS_NS(_name, _desc) \
-	CACHE_PARAMS_NS_BEGIN(_name, _desc) \
-		{'o', "output-format", "Output format: {table|csv}", 1, "FORMAT"}, \
-	CACHE_PARAMS_NS_END()
-
+#define GET_CACHE_PARAMS_NS(_name, _desc)                                                                 \
+	CACHE_PARAMS_NS_BEGIN(_name, _desc){'o', "output-format", "Output format: {table|csv}", 1, "FORMAT"}, \
+		CACHE_PARAMS_NS_END()
 
 static int core_param_handle_option_generic(char *opt, const char **arg, int (*handler)(char *opt, const char **arg))
 {
 	command_args_values.params_type = PARAM_TYPE_CORE;
 
-	if (!strcmp(opt, "cache-id")) {
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN,
-				OCF_CACHE_ID_MAX) == FAILURE) {
+							 OCF_CACHE_ID_MAX) == FAILURE)
+		{
 			return FAILURE;
 		}
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "core-id")) {
+	}
+	else if (!strcmp(opt, "core-id"))
+	{
 		if (validate_str_num(arg[0], "core id", OCF_CORE_ID_MIN,
-				OCF_CORE_ID_MAX) == FAILURE)
+							 OCF_CORE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.core_id = atoi(arg[0]);
-	} else {
+	}
+	else
+	{
 		return handler ? handler(opt, arg) : FAILURE;
 	}
 
@@ -528,14 +601,18 @@ static int cache_param_handle_option_generic(char *opt, const char **arg, int (*
 {
 	command_args_values.params_type = PARAM_TYPE_CACHE;
 
-	if (!strcmp(opt, "cache-id")) {
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN,
-				OCF_CACHE_ID_MAX) == FAILURE) {
+							 OCF_CACHE_ID_MAX) == FAILURE)
+		{
 			return FAILURE;
 		}
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else {
+	}
+	else
+	{
 		return handler ? handler(opt, arg) : FAILURE;
 	}
 
@@ -561,7 +638,7 @@ static char *seq_cutoff_policy_values[] = {
 static struct cas_param cas_core_params[] = {
 	/* Sequential cutoff params */
 	[core_param_seq_cutoff_threshold] = {
-		.name = "Sequential cutoff threshold [KiB]" ,
+		.name = "Sequential cutoff threshold [KiB]",
 		.transform_value = seq_cutoff_threshold_transform,
 	},
 	[core_param_seq_cutoff_policy] = {
@@ -587,30 +664,30 @@ static char *promotion_policy_type_values[] = {
 static struct cas_param cas_cache_params[] = {
 	/* Cleaning policy type */
 	[cache_param_cleaning_policy_type] = {
-		.name = "Cleaning policy type" ,
+		.name = "Cleaning policy type",
 		.value_names = cleaning_policy_type_values,
 	},
 
 	/* Cleaning policy ALRU params */
 	[cache_param_cleaning_alru_wake_up_time] = {
-		.name = "Wake up time [s]" ,
+		.name = "Wake up time [s]",
 	},
 	[cache_param_cleaning_alru_stale_buffer_time] = {
-		.name = "Stale buffer time [s]" ,
+		.name = "Stale buffer time [s]",
 	},
 	[cache_param_cleaning_alru_flush_max_buffers] = {
-		.name = "Flush max buffers" ,
+		.name = "Flush max buffers",
 	},
 	[cache_param_cleaning_alru_activity_threshold] = {
-		.name = "Activity threshold [ms]" ,
+		.name = "Activity threshold [ms]",
 	},
 
 	/* Cleaning policy ACP params */
 	[cache_param_cleaning_acp_wake_up_time] = {
-		.name = "Wake up time [ms]" ,
+		.name = "Wake up time [ms]",
 	},
 	[cache_param_cleaning_acp_flush_max_buffers] = {
-		.name = "Flush max buffers" ,
+		.name = "Flush max buffers",
 	},
 
 	/* Promotion policy type */
@@ -635,117 +712,123 @@ static struct cas_param cas_cache_params[] = {
 
 #define SEQ_CUT_OFF_THRESHOLD_DESC "Sequential cutoff activation threshold [KiB]"
 #define SEQ_CUT_OFF_POLICY_DESC "Sequential cutoff policy. " \
-	"Available policies: {always|full|never}"
+								"Available policies: {always|full|never}"
 
 #define CLEANING_POLICY_TYPE_DESC "Cleaning policy type. " \
-	"Available policy types: {nop|alru|acp}"
+								  "Available policy types: {nop|alru|acp}"
 
 #define CLEANING_ALRU_WAKE_UP_DESC "Period of time between awakenings of flushing thread <%d-%d>[s] (default: %d s)"
 #define CLEANING_ALRU_STALENESS_TIME_DESC "Time that has to pass from the last write operation before a dirty cache" \
-	 " block can be scheduled to be flushed <%d-%d>[s] (default: %d s)"
+										  " block can be scheduled to be flushed <%d-%d>[s] (default: %d s)"
 #define CLEANING_ALRU_FLUSH_MAX_BUFFERS_DESC "Number of dirty cache blocks to be flushed in one cleaning cycle" \
-	" <%d-%d> (default: %d)"
+											 " <%d-%d> (default: %d)"
 #define CLEANING_ALRU_ACTIVITY_THRESHOLD_DESC "Cache idle time before flushing thread can start <%d-%d>[ms]" \
-	" (default: %d ms)"
+											  " (default: %d ms)"
 
 #define CLEANING_ACP_WAKE_UP_DESC "Time between ACP cleaning thread iterations <%d-%d>[ms] (default: %d ms)"
 #define CLEANING_ACP_MAX_BUFFERS_DESC "Number of cache lines flushed in single ACP cleaning thread iteration" \
-	" <%d-%d> (default: %d)"
+									  " <%d-%d> (default: %d)"
 
-#define PROMOTION_POLICY_TYPE_DESC "Promotion policy type. "\
-	"Available policy types: {always|nhit}"
+#define PROMOTION_POLICY_TYPE_DESC "Promotion policy type. " \
+								   "Available policy types: {always|nhit}"
 
 #define PROMOTION_NHIT_TRIGGER_DESC "Cache occupancy value over which NHIT promotion is active " \
-	"<%d-%d>[%] (default: %d%)"
+									"<%d-%d>[%] (default: %d%)"
 
 #define PROMOTION_NHIT_THRESHOLD_DESC "Number of requests for given core line " \
-	"after which NHIT policy allows insertion into cache <%d-%d> (default: %d)"
+									  "after which NHIT policy allows insertion into cache <%d-%d> (default: %d)"
 
 static cli_namespace set_param_namespace = {
 	.short_name = 'n',
 	.long_name = "name",
 	.entries = {
-		CORE_PARAMS_NS_BEGIN("seq-cutoff", "Sequential cutoff parameters")
-			{'t', "threshold", SEQ_CUT_OFF_THRESHOLD_DESC, 1, "KiB", 0},
-			{'p', "policy", SEQ_CUT_OFF_POLICY_DESC, 1, "POLICY", 0},
+		CORE_PARAMS_NS_BEGIN("seq-cutoff", "Sequential cutoff parameters"){'t', "threshold", SEQ_CUT_OFF_THRESHOLD_DESC, 1, "KiB", 0},
+		{'p', "policy", SEQ_CUT_OFF_POLICY_DESC, 1, "POLICY", 0},
 		CORE_PARAMS_NS_END()
 
-		CACHE_PARAMS_NS_BEGIN("cleaning", "Cleaning policy parameters")
-			{'p', "policy", CLEANING_POLICY_TYPE_DESC, 1, "POLICY", 0},
+			CACHE_PARAMS_NS_BEGIN("cleaning", "Cleaning policy parameters"){'p', "policy", CLEANING_POLICY_TYPE_DESC, 1, "POLICY", 0},
 		CACHE_PARAMS_NS_END()
 
-		CACHE_PARAMS_NS_BEGIN("promotion", "Promotion policy parameters")
-			{'p', "policy", PROMOTION_POLICY_TYPE_DESC, 1, "POLICY", 0},
+			CACHE_PARAMS_NS_BEGIN("promotion", "Promotion policy parameters"){'p', "policy", PROMOTION_POLICY_TYPE_DESC, 1, "POLICY", 0},
 		CACHE_PARAMS_NS_END()
 
-		CACHE_PARAMS_NS_BEGIN("promotion-nhit", "Promotion policy NHIT parameters")
-			{'t', "threshold", PROMOTION_NHIT_THRESHOLD_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_NHIT_MIN_THRESHOLD, OCF_NHIT_MAX_THRESHOLD,
-				OCF_NHIT_THRESHOLD_DEFAULT},
-			{'o', "trigger", PROMOTION_NHIT_TRIGGER_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_NHIT_MIN_TRIGGER, OCF_NHIT_MAX_TRIGGER,
-				OCF_NHIT_TRIGGER_DEFAULT},
+			CACHE_PARAMS_NS_BEGIN("promotion-nhit", "Promotion policy NHIT parameters"){'t', "threshold", PROMOTION_NHIT_THRESHOLD_DESC, 1, "NUMBER",
+																						CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+																						OCF_NHIT_MIN_THRESHOLD, OCF_NHIT_MAX_THRESHOLD,
+																						OCF_NHIT_THRESHOLD_DEFAULT},
+		{'o', "trigger", PROMOTION_NHIT_TRIGGER_DESC, 1, "NUMBER",
+		 CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+		 OCF_NHIT_MIN_TRIGGER, OCF_NHIT_MAX_TRIGGER,
+		 OCF_NHIT_TRIGGER_DEFAULT},
 		CACHE_PARAMS_NS_END()
 
-		CACHE_PARAMS_NS_BEGIN("cleaning-alru", "Cleaning policy ALRU parameters")
-			{'w', "wake-up", CLEANING_ALRU_WAKE_UP_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ALRU_MIN_WAKE_UP, OCF_ALRU_MAX_WAKE_UP,
-				OCF_ALRU_DEFAULT_WAKE_UP},
-			{'s', "staleness-time", CLEANING_ALRU_STALENESS_TIME_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ALRU_MIN_STALENESS_TIME, OCF_ALRU_MAX_STALENESS_TIME,
-				OCF_ALRU_DEFAULT_STALENESS_TIME},
-			{'b', "flush-max-buffers", CLEANING_ALRU_FLUSH_MAX_BUFFERS_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ALRU_MIN_FLUSH_MAX_BUFFERS, OCF_ALRU_MAX_FLUSH_MAX_BUFFERS,
-				OCF_ALRU_DEFAULT_FLUSH_MAX_BUFFERS},
-			{'t', "activity-threshold", CLEANING_ALRU_ACTIVITY_THRESHOLD_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ALRU_MIN_ACTIVITY_THRESHOLD, OCF_ALRU_MAX_ACTIVITY_THRESHOLD,
-				OCF_ALRU_DEFAULT_ACTIVITY_THRESHOLD},
+			CACHE_PARAMS_NS_BEGIN("cleaning-alru", "Cleaning policy ALRU parameters"){'w', "wake-up", CLEANING_ALRU_WAKE_UP_DESC, 1, "NUMBER",
+																					  CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+																					  OCF_ALRU_MIN_WAKE_UP, OCF_ALRU_MAX_WAKE_UP,
+																					  OCF_ALRU_DEFAULT_WAKE_UP},
+		{'s', "staleness-time", CLEANING_ALRU_STALENESS_TIME_DESC, 1, "NUMBER",
+		 CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+		 OCF_ALRU_MIN_STALENESS_TIME, OCF_ALRU_MAX_STALENESS_TIME,
+		 OCF_ALRU_DEFAULT_STALENESS_TIME},
+		{'b', "flush-max-buffers", CLEANING_ALRU_FLUSH_MAX_BUFFERS_DESC, 1, "NUMBER",
+		 CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+		 OCF_ALRU_MIN_FLUSH_MAX_BUFFERS, OCF_ALRU_MAX_FLUSH_MAX_BUFFERS,
+		 OCF_ALRU_DEFAULT_FLUSH_MAX_BUFFERS},
+		{'t', "activity-threshold", CLEANING_ALRU_ACTIVITY_THRESHOLD_DESC, 1, "NUMBER",
+		 CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+		 OCF_ALRU_MIN_ACTIVITY_THRESHOLD, OCF_ALRU_MAX_ACTIVITY_THRESHOLD,
+		 OCF_ALRU_DEFAULT_ACTIVITY_THRESHOLD},
 		CACHE_PARAMS_NS_END()
 
-		CACHE_PARAMS_NS_BEGIN("cleaning-acp", "Cleaning policy ACP parameters")
-			{'w', "wake-up", CLEANING_ACP_WAKE_UP_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ACP_MIN_WAKE_UP, OCF_ACP_MAX_WAKE_UP,
-				OCF_ACP_DEFAULT_WAKE_UP},
-			{'b', "flush-max-buffers", CLEANING_ACP_MAX_BUFFERS_DESC, 1, "NUMBER",
-				CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
-				OCF_ACP_MIN_FLUSH_MAX_BUFFERS, OCF_ACP_MAX_FLUSH_MAX_BUFFERS,
-				OCF_ACP_DEFAULT_FLUSH_MAX_BUFFERS},
+			CACHE_PARAMS_NS_BEGIN("cleaning-acp", "Cleaning policy ACP parameters"){'w', "wake-up", CLEANING_ACP_WAKE_UP_DESC, 1, "NUMBER",
+																					CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+																					OCF_ACP_MIN_WAKE_UP, OCF_ACP_MAX_WAKE_UP,
+																					OCF_ACP_DEFAULT_WAKE_UP},
+		{'b', "flush-max-buffers", CLEANING_ACP_MAX_BUFFERS_DESC, 1, "NUMBER",
+		 CLI_OPTION_RANGE_INT | CLI_OPTION_DEFAULT_INT,
+		 OCF_ACP_MIN_FLUSH_MAX_BUFFERS, OCF_ACP_MAX_FLUSH_MAX_BUFFERS,
+		 OCF_ACP_DEFAULT_FLUSH_MAX_BUFFERS},
 		CACHE_PARAMS_NS_END()
 
-		{0},
+			{0},
 	},
 };
 
 int set_param_seq_cutoff_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "threshold")) {
+	if (!strcmp(opt, "threshold"))
+	{
 		if (validate_str_num(arg[0], "sequential cutoff threshold", 1,
-				4194181) == FAILURE)
+							 4194181) == FAILURE)
 			return FAILURE;
 
 		SET_CORE_PARAM(core_param_seq_cutoff_threshold, atoi(arg[0]) * KiB);
-	} else if (!strcmp(opt, "policy")) {
-		if (!strcmp("always", arg[0])) {
+	}
+	else if (!strcmp(opt, "policy"))
+	{
+		if (!strcmp("always", arg[0]))
+		{
 			SET_CORE_PARAM(core_param_seq_cutoff_policy,
-					ocf_seq_cutoff_policy_always);
-		} else if (!strcmp("full", arg[0])) {
+						   ocf_seq_cutoff_policy_always);
+		}
+		else if (!strcmp("full", arg[0]))
+		{
 			SET_CORE_PARAM(core_param_seq_cutoff_policy,
-					ocf_seq_cutoff_policy_full);
-		} else if (!strcmp("never", arg[0])) {
+						   ocf_seq_cutoff_policy_full);
+		}
+		else if (!strcmp("never", arg[0]))
+		{
 			SET_CORE_PARAM(core_param_seq_cutoff_policy,
-					ocf_seq_cutoff_policy_never);
-		} else {
+						   ocf_seq_cutoff_policy_never);
+		}
+		else
+		{
 			cas_printf(LOG_ERR, "Error: Invalid policy name.\n");
 			return FAILURE;
 		}
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -754,21 +837,31 @@ int set_param_seq_cutoff_handle_option(char *opt, const char **arg)
 
 int set_param_cleaning_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "policy")) {
-		if (!strcmp("nop", arg[0])) {
+	if (!strcmp(opt, "policy"))
+	{
+		if (!strcmp("nop", arg[0]))
+		{
 			SET_CACHE_PARAM(cache_param_cleaning_policy_type,
-					ocf_cleaning_nop);
-		} else if (!strcmp("alru", arg[0])) {
+							ocf_cleaning_nop);
+		}
+		else if (!strcmp("alru", arg[0]))
+		{
 			SET_CACHE_PARAM(cache_param_cleaning_policy_type,
-					ocf_cleaning_alru);
-		} else if (!strcmp("acp", arg[0])) {
+							ocf_cleaning_alru);
+		}
+		else if (!strcmp("acp", arg[0]))
+		{
 			SET_CACHE_PARAM(cache_param_cleaning_policy_type,
-					ocf_cleaning_acp);
-		} else {
+							ocf_cleaning_acp);
+		}
+		else
+		{
 			cas_printf(LOG_ERR, "Error: Invalid policy name.\n");
 			return FAILURE;
 		}
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -777,39 +870,52 @@ int set_param_cleaning_handle_option(char *opt, const char **arg)
 
 int set_param_cleaning_alru_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "wake-up")) {
+	if (!strcmp(opt, "wake-up"))
+	{
 		if (validate_str_num(arg[0], "wake-up time",
-				OCF_ALRU_MIN_WAKE_UP, OCF_ALRU_MAX_WAKE_UP)) {
+							 OCF_ALRU_MIN_WAKE_UP, OCF_ALRU_MAX_WAKE_UP))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_alru_wake_up_time,
-				strtoul(arg[0], NULL, 10));
-	} else if (!strcmp(opt, "staleness-time")) {
+						strtoul(arg[0], NULL, 10));
+	}
+	else if (!strcmp(opt, "staleness-time"))
+	{
 		if (validate_str_num(arg[0], "staleness time",
-				OCF_ALRU_MIN_STALENESS_TIME, OCF_ALRU_MAX_STALENESS_TIME)) {
+							 OCF_ALRU_MIN_STALENESS_TIME, OCF_ALRU_MAX_STALENESS_TIME))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_alru_stale_buffer_time,
-				strtoul(arg[0], NULL, 10));
-	} else if (!strcmp(opt, "flush-max-buffers")) {
+						strtoul(arg[0], NULL, 10));
+	}
+	else if (!strcmp(opt, "flush-max-buffers"))
+	{
 		if (validate_str_num(arg[0], "flush max buffers",
-				OCF_ALRU_MIN_FLUSH_MAX_BUFFERS, OCF_ALRU_MAX_FLUSH_MAX_BUFFERS)) {
+							 OCF_ALRU_MIN_FLUSH_MAX_BUFFERS, OCF_ALRU_MAX_FLUSH_MAX_BUFFERS))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_alru_flush_max_buffers,
-				strtoul(arg[0], NULL, 10));
-	} else if (!strcmp(opt, "activity-threshold")) {
+						strtoul(arg[0], NULL, 10));
+	}
+	else if (!strcmp(opt, "activity-threshold"))
+	{
 		if (validate_str_num(arg[0], "activity threshold",
-				OCF_ALRU_MIN_ACTIVITY_THRESHOLD, OCF_ALRU_MAX_ACTIVITY_THRESHOLD)) {
+							 OCF_ALRU_MIN_ACTIVITY_THRESHOLD, OCF_ALRU_MAX_ACTIVITY_THRESHOLD))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_alru_activity_threshold,
-				strtoul(arg[0], NULL, 10));
-	} else {
+						strtoul(arg[0], NULL, 10));
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -818,22 +924,27 @@ int set_param_cleaning_alru_handle_option(char *opt, const char **arg)
 
 int set_param_cleaning_acp_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "wake-up")) {
+	if (!strcmp(opt, "wake-up"))
+	{
 		if (validate_str_num(arg[0], "wake-up time",
-				OCF_ACP_MIN_WAKE_UP, OCF_ACP_MAX_WAKE_UP)) {
+							 OCF_ACP_MIN_WAKE_UP, OCF_ACP_MAX_WAKE_UP))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_acp_wake_up_time,
-				strtoul(arg[0], NULL, 10));
-	} else if (!strcmp(opt, "flush-max-buffers")) {
+						strtoul(arg[0], NULL, 10));
+	}
+	else if (!strcmp(opt, "flush-max-buffers"))
+	{
 		if (validate_str_num(arg[0], "flush max buffers",
-				OCF_ACP_MIN_FLUSH_MAX_BUFFERS, OCF_ACP_MAX_FLUSH_MAX_BUFFERS)) {
+							 OCF_ACP_MIN_FLUSH_MAX_BUFFERS, OCF_ACP_MAX_FLUSH_MAX_BUFFERS))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_cleaning_acp_flush_max_buffers,
-				strtoul(arg[0], NULL, 10));
+						strtoul(arg[0], NULL, 10));
 	}
 
 	return SUCCESS;
@@ -841,18 +952,26 @@ int set_param_cleaning_acp_handle_option(char *opt, const char **arg)
 
 int set_param_promotion_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "policy")) {
-		if (!strcmp("always", arg[0])) {
+	if (!strcmp(opt, "policy"))
+	{
+		if (!strcmp("always", arg[0]))
+		{
 			SET_CACHE_PARAM(cache_param_promotion_policy_type,
-					ocf_promotion_always);
-		} else if (!strcmp("nhit", arg[0])) {
+							ocf_promotion_always);
+		}
+		else if (!strcmp("nhit", arg[0]))
+		{
 			SET_CACHE_PARAM(cache_param_promotion_policy_type,
-					ocf_promotion_nhit);
-		} else {
+							ocf_promotion_nhit);
+		}
+		else
+		{
 			cas_printf(LOG_ERR, "Error: Invalid policy name.\n");
 			return FAILURE;
 		}
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -861,23 +980,30 @@ int set_param_promotion_handle_option(char *opt, const char **arg)
 
 int set_param_promotion_nhit_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "threshold")) {
+	if (!strcmp(opt, "threshold"))
+	{
 		if (validate_str_num(arg[0], "threshold",
-				OCF_NHIT_MIN_THRESHOLD, OCF_NHIT_MAX_THRESHOLD)) {
+							 OCF_NHIT_MIN_THRESHOLD, OCF_NHIT_MAX_THRESHOLD))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_promotion_nhit_insertion_threshold,
-				strtoul(arg[0], NULL, 10));
-	} else if (!strcmp(opt, "trigger")) {
+						strtoul(arg[0], NULL, 10));
+	}
+	else if (!strcmp(opt, "trigger"))
+	{
 		if (validate_str_num(arg[0], "trigger",
-				OCF_NHIT_MIN_TRIGGER, OCF_NHIT_MAX_TRIGGER)) {
+							 OCF_NHIT_MIN_TRIGGER, OCF_NHIT_MAX_TRIGGER))
+		{
 			return FAILURE;
 		}
 
 		SET_CACHE_PARAM(cache_param_promotion_nhit_trigger_threshold,
-				strtoul(arg[0], NULL, 10));
-	} else {
+						strtoul(arg[0], NULL, 10));
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -886,48 +1012,62 @@ int set_param_promotion_nhit_handle_option(char *opt, const char **arg)
 
 int set_param_namespace_handle_option(char *namespace, char *opt, const char **arg)
 {
-	if (!strcmp(namespace, "seq-cutoff")) {
+	if (!strcmp(namespace, "seq-cutoff"))
+	{
 		return core_param_handle_option_generic(opt, arg,
-				set_param_seq_cutoff_handle_option);
-	} else if (!strcmp(namespace, "cleaning")) {
+												set_param_seq_cutoff_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning"))
+	{
 		return cache_param_handle_option_generic(opt, arg,
-				set_param_cleaning_handle_option);
-	} else if (!strcmp(namespace, "cleaning-alru")) {
+												 set_param_cleaning_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning-alru"))
+	{
 		return cache_param_handle_option_generic(opt, arg,
-				set_param_cleaning_alru_handle_option);
-	} else if (!strcmp(namespace, "cleaning-acp")) {
+												 set_param_cleaning_alru_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning-acp"))
+	{
 		return cache_param_handle_option_generic(opt, arg,
-				set_param_cleaning_acp_handle_option);
-	} else if (!strcmp(namespace, "promotion")) {
+												 set_param_cleaning_acp_handle_option);
+	}
+	else if (!strcmp(namespace, "promotion"))
+	{
 		return cache_param_handle_option_generic(opt, arg,
-				set_param_promotion_handle_option);
-	} else if (!strcmp(namespace, "promotion-nhit")) {
+												 set_param_promotion_handle_option);
+	}
+	else if (!strcmp(namespace, "promotion-nhit"))
+	{
 		return cache_param_handle_option_generic(opt, arg,
-				set_param_promotion_nhit_handle_option);
-	} else {
+												 set_param_promotion_nhit_handle_option);
+	}
+	else
+	{
 		return FAILURE;
 	}
 }
-
 
 int handle_set_param()
 {
 	int err = 0;
 
-	if (command_args_values.params_count == 0) {
+	if (command_args_values.params_count == 0)
+	{
 		cas_printf(LOG_ERR, "Error: No parameters specified!\n");
 		return FAILURE;
 	}
 
-	switch (command_args_values.params_type) {
+	switch (command_args_values.params_type)
+	{
 	case PARAM_TYPE_CORE:
 		err = core_params_set(command_args_values.cache_id,
-				command_args_values.core_id,
-				cas_core_params);
+							  command_args_values.core_id,
+							  cas_core_params);
 		break;
 	case PARAM_TYPE_CACHE:
 		err = cache_params_set(command_args_values.cache_id,
-				cas_cache_params);
+							   cas_cache_params);
 		break;
 	default:
 		err = FAILURE;
@@ -949,23 +1089,26 @@ static cli_namespace get_param_namespace = {
 	.long_name = "name",
 	.entries = {
 		GET_CORE_PARAMS_NS("seq-cutoff", "Sequential cutoff parameters")
-		GET_CACHE_PARAMS_NS("cleaning", "Cleaning policy parameters")
-		GET_CACHE_PARAMS_NS("cleaning-alru", "Cleaning policy ALRU parameters")
-		GET_CACHE_PARAMS_NS("cleaning-acp", "Cleaning policy ACP parameters")
-		GET_CACHE_PARAMS_NS("promotion", "Promotion policy parameters")
-		GET_CACHE_PARAMS_NS("promotion-nhit", "Promotion policy NHIT parameters")
+			GET_CACHE_PARAMS_NS("cleaning", "Cleaning policy parameters")
+				GET_CACHE_PARAMS_NS("cleaning-alru", "Cleaning policy ALRU parameters")
+					GET_CACHE_PARAMS_NS("cleaning-acp", "Cleaning policy ACP parameters")
+						GET_CACHE_PARAMS_NS("promotion", "Promotion policy parameters")
+							GET_CACHE_PARAMS_NS("promotion-nhit", "Promotion policy NHIT parameters")
 
-		{0},
+								{0},
 	},
 };
 
 int get_param_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "output-format")) {
+	if (!strcmp(opt, "output-format"))
+	{
 		command_args_values.output_format = validate_str_output_format(arg[0]);
 		if (OUTPUT_FORMAT_INVALID == command_args_values.output_format)
 			return FAILURE;
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -974,37 +1117,50 @@ int get_param_handle_option(char *opt, const char **arg)
 
 int get_param_namespace_handle_option(char *namespace, char *opt, const char **arg)
 {
-	if (!strcmp(namespace, "seq-cutoff")) {
+	if (!strcmp(namespace, "seq-cutoff"))
+	{
 		SELECT_CORE_PARAM(core_param_seq_cutoff_threshold);
 		SELECT_CORE_PARAM(core_param_seq_cutoff_policy);
 		return core_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else if (!strcmp(namespace, "cleaning")) {
+												get_param_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning"))
+	{
 		SELECT_CACHE_PARAM(cache_param_cleaning_policy_type);
 		return cache_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else if (!strcmp(namespace, "cleaning-alru")) {
+												 get_param_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning-alru"))
+	{
 		SELECT_CACHE_PARAM(cache_param_cleaning_alru_wake_up_time);
 		SELECT_CACHE_PARAM(cache_param_cleaning_alru_stale_buffer_time);
 		SELECT_CACHE_PARAM(cache_param_cleaning_alru_flush_max_buffers);
 		SELECT_CACHE_PARAM(cache_param_cleaning_alru_activity_threshold);
 		return cache_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else if (!strcmp(namespace, "cleaning-acp")) {
+												 get_param_handle_option);
+	}
+	else if (!strcmp(namespace, "cleaning-acp"))
+	{
 		SELECT_CACHE_PARAM(cache_param_cleaning_acp_wake_up_time);
 		SELECT_CACHE_PARAM(cache_param_cleaning_acp_flush_max_buffers);
 		return cache_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else if (!strcmp(namespace, "promotion")) {
+												 get_param_handle_option);
+	}
+	else if (!strcmp(namespace, "promotion"))
+	{
 		SELECT_CACHE_PARAM(cache_param_promotion_policy_type);
 		return cache_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else if (!strcmp(namespace, "promotion-nhit")) {
+												 get_param_handle_option);
+	}
+	else if (!strcmp(namespace, "promotion-nhit"))
+	{
 		SELECT_CACHE_PARAM(cache_param_promotion_nhit_insertion_threshold);
 		SELECT_CACHE_PARAM(cache_param_promotion_nhit_trigger_threshold);
 		return cache_param_handle_option_generic(opt, arg,
-				get_param_handle_option);
-	} else {
+												 get_param_handle_option);
+	}
+	else
+	{
 		return FAILURE;
 	}
 }
@@ -1014,19 +1170,21 @@ int handle_get_param()
 	int format = TEXT;
 	int err = 0;
 
-	if (OUTPUT_FORMAT_CSV == command_args_values.output_format) {
+	if (OUTPUT_FORMAT_CSV == command_args_values.output_format)
+	{
 		format = RAW_CSV;
 	}
 
-	switch (command_args_values.params_type) {
+	switch (command_args_values.params_type)
+	{
 	case PARAM_TYPE_CORE:
 		err = core_params_get(command_args_values.cache_id,
-				command_args_values.core_id,
-				cas_core_params, format);
+							  command_args_values.core_id,
+							  cas_core_params, format);
 		break;
 	case PARAM_TYPE_CACHE:
 		err = cache_params_get(command_args_values.cache_id,
-				cas_cache_params, format);
+							   cas_cache_params, format);
 		break;
 	default:
 		err = FAILURE;
@@ -1040,36 +1198,44 @@ int handle_get_param()
 }
 
 static cli_option set_state_cache_mode_options[] = {
-	{'c', "cache-mode", "Cache mode. Available cache modes: {"CAS_CLI_HELP_SET_CACHE_MODES"}", 1, "NAME", CLI_OPTION_REQUIRED},
+	{'c', "cache-mode", "Cache mode. Available cache modes: {" CAS_CLI_HELP_SET_CACHE_MODES "}", 1, "NAME", CLI_OPTION_REQUIRED},
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
-	{'f', "flush-cache", "Flush all dirty data from cache before switching to new mode. Option is required when switching from Write-Back or Write-Only mode", 1, "yes|no",0},
+	{'f', "flush-cache", "Flush all dirty data from cache before switching to new mode. Option is required when switching from Write-Back or Write-Only mode", 1, "yes|no", 0},
 	{0},
 };
 
 int set_cache_mode_command_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "cache-mode")) {
+	if (!strcmp(opt, "cache-mode"))
+	{
 		command_args_values.cache_mode =
-				validate_str_cache_mode((const char*)arg[0]);
+			validate_str_cache_mode((const char *)arg[0]);
 
 		if (command_args_values.cache_mode < 0)
 			return FAILURE;
-	} else if (!strcmp(opt, "cache-id")) {
+	}
+	else if (!strcmp(opt, "cache-id"))
+	{
 		if (validate_str_num(arg[0], "cache id", OCF_CACHE_ID_MIN,
-				OCF_CACHE_ID_MAX) == FAILURE)
+							 OCF_CACHE_ID_MAX) == FAILURE)
 			return FAILURE;
 
 		command_args_values.cache_id = atoi(arg[0]);
-	} else if (!strcmp(opt, "flush-cache")) {
+	}
+	else if (!strcmp(opt, "flush-cache"))
+	{
 		if (!strcmp("yes", arg[0]))
 			command_args_values.cache_state_flush = YES;
 		else if (!strcmp("no", arg[0]))
 			command_args_values.cache_state_flush = NO;
-		else {
+		else
+		{
 			cas_printf(LOG_ERR, "Error: 'yes' or 'no' required as an argument for -f option.\n");
 			return FAILURE;
 		}
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -1079,94 +1245,85 @@ int set_cache_mode_command_handle_option(char *opt, const char **arg)
 int handle_set_cache_mode()
 {
 	/*========== [Orthus FLAG BEGIN] ==========*/
-	if (command_args_values.cache_mode == ocf_cache_mode_mfwa
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwb
-		|| command_args_values.cache_mode == ocf_cache_mode_mfwt
-		|| command_args_values.cache_mode == ocf_cache_mode_mfcwt) {
+	if (command_args_values.cache_mode == ocf_cache_mode_mfwa || command_args_values.cache_mode == ocf_cache_mode_mfwb || command_args_values.cache_mode == ocf_cache_mode_mfwt || command_args_values.cache_mode == ocf_cache_mode_mfcwt)
+	{
 		cas_printf(LOG_INFO, "You are switching to a multi-factor mode. Please be sure"
-			                 " that a monitor thread has been started, otherwise this"
-			                 " mode functions exactly the same as its non-mf counterpart\n"
-			                 "See `casadm -M --help` for more info\n");
+							 " that a monitor thread has been started, otherwise this"
+							 " mode functions exactly the same as its non-mf counterpart\n"
+							 "See `casadm -M --help` for more info\n");
 	}
 	/*========== [Orthus FLAG END] ==========*/
 
 	return set_cache_mode(command_args_values.cache_mode,
-			command_args_values.cache_id,
-			command_args_values.cache_state_flush);
+						  command_args_values.cache_id,
+						  command_args_values.cache_state_flush);
 }
 
 static cli_option add_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'j', "core-id", CORE_ID_DESC, 1, "ID", 0},
 	{'d', "core-device", CORE_DEVICE_DESC, 1, "DEVICE", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 int handle_add()
 {
 	return add_core(command_args_values.cache_id,
-			command_args_values.core_id,
-			command_args_values.core_device,
-			false, false);
+					command_args_values.core_id,
+					command_args_values.core_device,
+					false, false);
 }
 
 static cli_option remove_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'j', "core-id", CORE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'f', "force", "Force remove inactive core"},
-	{0}
-};
+	{0}};
 
 int handle_remove()
 {
 	return remove_core(command_args_values.cache_id,
-			command_args_values.core_id,
-			false,
-			command_args_values.force);
+					   command_args_values.core_id,
+					   false,
+					   command_args_values.force);
 }
 
 static cli_option core_pool_remove_options[] = {
 	{'d', "device", CORE_DEVICE_DESC, 1, "DEVICE", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 int handle_core_pool_remove()
 {
 	return core_pool_remove(command_args_values.core_device);
 }
 
-#define RESET_COUNTERS_CORE_ID_DESC "Identifier of core <0-"xstr(_CASADM_CORE_ID_MAX) \
-		"> within given cache instance. If not specified, statistics are reset " \
-		"for all cores in cache instance."
+#define RESET_COUNTERS_CORE_ID_DESC "Identifier of core <0-" xstr(_CASADM_CORE_ID_MAX) "> within given cache instance. If not specified, statistics are reset " \
+																					   "for all cores in cache instance."
 
 static cli_option reset_counters_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'j', "core-id", RESET_COUNTERS_CORE_ID_DESC, 1, "ID", 0},
-	{0}
-};
+	{0}};
 
 int handle_reset_counters()
 {
 	return reset_counters(command_args_values.cache_id,
-			command_args_values.core_id);
+						  command_args_values.core_id);
 }
 
 static cli_option flush_core_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'j', "core-id", CORE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 int handle_flush_core()
 {
 	return flush_core(command_args_values.cache_id,
-			command_args_values.core_id);
+					  command_args_values.core_id);
 }
 
 static cli_option flush_cache_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 int handle_flush_cache()
 {
@@ -1177,7 +1334,8 @@ int handle_flush_cache()
  * IO Classes Commands
  ******************************************************************************/
 
-enum {
+enum
+{
 	io_class_opt_subcmd_configure = 0,
 	io_class_opt_subcmd_list,
 
@@ -1207,8 +1365,7 @@ static cli_option io_class_params_options[] = {
 		.args_count = 0,
 		.arg = NULL,
 		.priv = 0,
-		.flags = CLI_OPTION_DEFAULT_INT
-	},
+		.flags = CLI_OPTION_DEFAULT_INT},
 	[io_class_opt_subcmd_list] = {
 		.short_name = 'L',
 		.long_name = "list",
@@ -1224,30 +1381,13 @@ static cli_option io_class_params_options[] = {
 		.desc = CACHE_ID_DESC,
 		.args_count = 1,
 		.arg = "ID",
-		.priv = (1 << io_class_opt_subcmd_configure)
-			| (1 << io_class_opt_subcmd_list)
-			| (1 << io_class_opt_flag_required),
+		.priv = (1 << io_class_opt_subcmd_configure) | (1 << io_class_opt_subcmd_list) | (1 << io_class_opt_flag_required),
 		.flags = CLI_OPTION_RANGE_INT,
 		.max_value = 0,
 		.min_value = OCF_CACHE_ID_MAX,
 	},
-	[io_class_opt_cache_file_load] = {
-		.short_name = 'f',
-		.long_name = "file",
-		.desc = "Configuration file containing IO class definition",
-		.args_count = 1,
-		.arg = "FILE",
-		.priv = (1 << io_class_opt_subcmd_configure)
-			| (1 << io_class_opt_flag_required)
-	},
-	[io_class_opt_output_format] = {
-		.short_name = 'o',
-		.long_name = "output-format",
-		.desc = "Output format: {table|csv}",
-		.args_count = 1,
-		.arg = "FORMAT",
-		.priv = (1 << io_class_opt_subcmd_list)
-	},
+	[io_class_opt_cache_file_load] = {.short_name = 'f', .long_name = "file", .desc = "Configuration file containing IO class definition", .args_count = 1, .arg = "FILE", .priv = (1 << io_class_opt_subcmd_configure) | (1 << io_class_opt_flag_required)},
+	[io_class_opt_output_format] = {.short_name = 'o', .long_name = "output-format", .desc = "Output format: {table|csv}", .args_count = 1, .arg = "FORMAT", .priv = (1 << io_class_opt_subcmd_list)},
 
 	[io_class_opt_io_class_id] = {
 		.short_name = 'd',
@@ -1262,7 +1402,7 @@ static cli_option io_class_params_options[] = {
 		.long_name = "priority",
 		.desc = "IO class priority",
 		.args_count = 1,
-		.arg = xstr(OCF_IO_CLASS_PRIO_HIGHEST)"-"xstr(OCF_IO_CLASS_PRIO_LOWEST),
+		.arg = xstr(OCF_IO_CLASS_PRIO_HIGHEST) "-" xstr(OCF_IO_CLASS_PRIO_LOWEST),
 		.flags = CLI_OPTION_RANGE_INT,
 		.min_value = OCF_IO_CLASS_PRIO_HIGHEST,
 		.max_value = OCF_IO_CLASS_PRIO_LOWEST,
@@ -1291,15 +1431,15 @@ static cli_option io_class_params_options[] = {
 	[io_class_opt_cache_mode] = {
 		.short_name = 'c',
 		.long_name = "cache-mode",
-		.desc = "Overwrite cache mode for this IO class from available: {"CAS_CLI_HELP_START_CACHE_MODES"}",
+		.desc = "Overwrite cache mode for this IO class from available: {" CAS_CLI_HELP_START_CACHE_MODES "}",
 		.args_count = 1,
 		.arg = "NAME",
 	},
 
-	{0}
-};
+	{0}};
 
-struct {
+struct
+{
 	int subcmd;
 	int cache_id;
 	int io_class_id;
@@ -1314,17 +1454,16 @@ struct {
 	.subcmd = io_class_opt_subcmd_unknown,
 	.cache_id = 0,
 	.file = "",
-	.output_format = OUTPUT_FORMAT_DEFAULT
-};
+	.output_format = OUTPUT_FORMAT_DEFAULT};
 
 /* Filler to print sub-commands */
-int io_class_print_subcmd(cli_option* options, int flag)
+int io_class_print_subcmd(cli_option *options, int flag)
 {
 	return (0 == (options->flags & CLI_OPTION_DEFAULT_INT)) ? 0 : 1;
 }
 
 /* Filler to print parameters of given sub-command */
-int io_class_print_param(cli_option* options, int flag)
+int io_class_print_param(cli_option *options, int flag)
 {
 	return (flag == (options->priv & flag)) ? 1 : 0;
 }
@@ -1340,67 +1479,83 @@ static inline void io_class_print_invalid_subcmd(void)
 /* Parser of option for IO class command */
 int io_class_handle_option(char *opt, const char **arg)
 {
-	if (io_class_opt_subcmd_unknown == io_class_params.subcmd) {
+	if (io_class_opt_subcmd_unknown == io_class_params.subcmd)
+	{
 		/* First parameters which defines sub-command */
-		if (!strcmp(opt, "load-config")) {
+		if (!strcmp(opt, "load-config"))
+		{
 			io_class_params.subcmd = io_class_opt_subcmd_configure;
 			return 0;
-		} else if (!strcmp(opt, "list")) {
+		}
+		else if (!strcmp(opt, "list"))
+		{
 			io_class_params.subcmd = io_class_opt_subcmd_list;
 			return 0;
 		}
 	}
 
-	if (!strcmp(opt, "cache-id")) {
+	if (!strcmp(opt, "cache-id"))
+	{
 		if (command_handle_option(opt, arg))
 			return FAILURE;
 
 		io_class_params_options[io_class_opt_cache_id].priv |= (1 << io_class_opt_flag_set);
 		io_class_params.cache_id = command_args_values.cache_id;
-	} else if (!strcmp(opt, "file")) {
+	}
+	else if (!strcmp(opt, "file"))
+	{
 		if (validate_path(arg[0], 0))
 			return FAILURE;
 
-		io_class_params_options[io_class_opt_cache_file_load].priv |=  (1 << io_class_opt_flag_set);
+		io_class_params_options[io_class_opt_cache_file_load].priv |= (1 << io_class_opt_flag_set);
 
 		strncpy_s(io_class_params.file, sizeof(io_class_params.file), arg[0], strnlen_s(arg[0], sizeof(io_class_params.file)));
-	} else if (!strcmp(opt, "output-format")) {
+	}
+	else if (!strcmp(opt, "output-format"))
+	{
 		io_class_params.output_format = validate_str_output_format(arg[0]);
 		if (OUTPUT_FORMAT_INVALID == io_class_params.output_format)
 			return FAILURE;
 
-		io_class_params_options[io_class_opt_output_format].priv |=  (1 << io_class_opt_flag_set);
+		io_class_params_options[io_class_opt_output_format].priv |= (1 << io_class_opt_flag_set);
 	}
 
 	return 0;
 }
 
 /* Check if all required command were set depending on command type */
-int io_class_is_missing() {
+int io_class_is_missing()
+{
 	int result = 0;
 	int mask;
-	cli_option* iter = io_class_params_options;
+	cli_option *iter = io_class_params_options;
 
-	for (;iter->long_name; iter++) {
+	for (; iter->long_name; iter++)
+	{
 		char option_name[MAX_STR_LEN];
-		if (iter->flags & CLI_OPTION_DEFAULT_INT) {
+		if (iter->flags & CLI_OPTION_DEFAULT_INT)
+		{
 			continue;
 		}
 
 		command_name_in_brackets(option_name, MAX_STR_LEN, iter->short_name, iter->long_name);
 
-		if (iter->priv & (1 << io_class_opt_flag_set)) {
+		if (iter->priv & (1 << io_class_opt_flag_set))
+		{
 			/* Option is set, check if this option is allowed */
 			mask = (1 << io_class_params.subcmd);
-			if (0 == (mask & iter->priv)) {
+			if (0 == (mask & iter->priv))
+			{
 				cas_printf(LOG_INFO, "Option '%s' is not allowed\n", option_name);
 				result = -1;
 			}
-
-		} else {
+		}
+		else
+		{
 			/* Option is missing, check if it is required for this sub-command*/
 			mask = (1 << io_class_params.subcmd) | (1 << io_class_opt_flag_required);
-			if (mask == (iter->priv & mask)) {
+			if (mask == (iter->priv & mask))
+			{
 				cas_printf(LOG_INFO, "Option '%s' is missing\n", option_name);
 				result = -1;
 			}
@@ -1411,25 +1566,29 @@ int io_class_is_missing() {
 }
 
 /* Command handler */
-int io_class_handle() {
+int io_class_handle()
+{
 	/* Check if sub-command was specified */
-	if (io_class_opt_subcmd_unknown == io_class_params.subcmd) {
+	if (io_class_opt_subcmd_unknown == io_class_params.subcmd)
+	{
 		io_class_print_invalid_subcmd();
 		return FAILURE;
 	}
 
 	/* Check if all required options are set */
-	if (io_class_is_missing()) {
+	if (io_class_is_missing())
+	{
 		return FAILURE;
 	}
 
-	switch (io_class_params.subcmd) {
+	switch (io_class_params.subcmd)
+	{
 	case io_class_opt_subcmd_configure:
 		return partition_setup(io_class_params.cache_id,
-				io_class_params.file);
+							   io_class_params.file);
 	case io_class_opt_subcmd_list:
 		return partition_list(io_class_params.cache_id,
-				io_class_params.output_format);
+							  io_class_params.output_format);
 	}
 
 	return FAILURE;
@@ -1438,7 +1597,8 @@ int io_class_handle() {
 /*******************************************************************************
  * Script Commands
  ******************************************************************************/
-enum {
+enum
+{
 	script_cmd_unknown = -1,
 
 	script_cmd_min_id = 0,
@@ -1495,8 +1655,7 @@ static cli_option script_params_options[] = {
 		.long_name = "add-core",
 		.args_count = 0,
 		.arg = NULL,
-		.priv = (1 << script_opt_core_device)
-			| (1 << script_opt_cache_id),
+		.priv = (1 << script_opt_core_device) | (1 << script_opt_cache_id),
 		.flags = CLI_COMMAND_HIDDEN,
 	},
 	[script_cmd_remove_core] = {
@@ -1504,8 +1663,7 @@ static cli_option script_params_options[] = {
 		.long_name = "remove-core",
 		.args_count = 0,
 		.arg = NULL,
-		.priv = (1 << script_opt_cache_id)
-			| (1 << script_opt_core_id),
+		.priv = (1 << script_opt_cache_id) | (1 << script_opt_core_id),
 		.flags = CLI_COMMAND_HIDDEN,
 	},
 	[script_cmd_purge_cache] = {
@@ -1521,8 +1679,7 @@ static cli_option script_params_options[] = {
 		.long_name = "purge-core",
 		.args_count = 0,
 		.arg = NULL,
-		.priv = (1 << script_opt_cache_id)
-			| (1 << script_opt_core_id),
+		.priv = (1 << script_opt_cache_id) | (1 << script_opt_core_id),
 		.flags = CLI_COMMAND_HIDDEN,
 	},
 	[script_opt_cache_device] = {
@@ -1538,10 +1695,7 @@ static cli_option script_params_options[] = {
 		.long_name = "cache-id",
 		.args_count = 1,
 		.arg = "ID",
-		.priv = (1 << script_cmd_remove_core)
-			| (1 << script_cmd_add_core)
-			| (1 << script_cmd_purge_cache)
-			| (1 << script_cmd_purge_core),
+		.priv = (1 << script_cmd_remove_core) | (1 << script_cmd_add_core) | (1 << script_cmd_purge_cache) | (1 << script_cmd_purge_core),
 		.flags = (CLI_OPTION_RANGE_INT | CLI_OPTION_HIDDEN),
 		.min_value = OCF_CACHE_ID_MIN,
 		.max_value = OCF_CACHE_ID_MAX,
@@ -1551,9 +1705,7 @@ static cli_option script_params_options[] = {
 		.long_name = "core-id",
 		.args_count = 1,
 		.arg = "ID",
-		.priv = (1 << script_cmd_remove_core)
-			| (1 << script_cmd_add_core)
-			| (1 << script_cmd_purge_core),
+		.priv = (1 << script_cmd_remove_core) | (1 << script_cmd_add_core) | (1 << script_cmd_purge_core),
 		.flags = (CLI_OPTION_RANGE_INT | CLI_OPTION_HIDDEN),
 		.min_value = OCF_CORE_ID_MIN,
 		.max_value = OCF_CORE_ID_MAX,
@@ -1599,15 +1751,17 @@ static cli_option script_params_options[] = {
 		.flags = CLI_OPTION_HIDDEN,
 	},
 
-	{0}
-};
+	{0}};
 
 int script_handle_option(char *opt, const char **arg)
 {
 	int id;
-	if (script_cmd_unknown == command_args_values.script_subcmd) {
-		for (id = script_cmd_min_id; id < script_cmd_max_id; id++) {
-			if (!strcmp(opt, script_params_options[id].long_name)) {
+	if (script_cmd_unknown == command_args_values.script_subcmd)
+	{
+		for (id = script_cmd_min_id; id < script_cmd_max_id; id++)
+		{
+			if (!strcmp(opt, script_params_options[id].long_name))
+			{
 				command_args_values.script_subcmd = id;
 				return SUCCESS;
 			}
@@ -1615,8 +1769,10 @@ int script_handle_option(char *opt, const char **arg)
 		return FAILURE;
 	}
 
-	for (id = script_opt_min_id; id < script_opt_max_id; id++) {
-		if (!strcmp(opt, script_params_options[id].long_name)) {
+	for (id = script_opt_min_id; id < script_opt_max_id; id++)
+	{
+		if (!strcmp(opt, script_params_options[id].long_name))
+		{
 			if (command_handle_option(opt, arg) == FAILURE)
 				return FAILURE;
 
@@ -1629,7 +1785,8 @@ int script_handle_option(char *opt, const char **arg)
 	return FAILURE;
 }
 
-int is_option_allowed(int option_id) {
+int is_option_allowed(int option_id)
+{
 	cli_option option = script_params_options[option_id];
 	int commands_compatible_with_option = option.priv;
 	int selected_command = command_args_values.script_subcmd;
@@ -1639,7 +1796,8 @@ int is_option_allowed(int option_id) {
 	return option_is_allowed;
 }
 
-int is_option_required(int option_id) {
+int is_option_required(int option_id)
+{
 	int option_flag = (1 << option_id);
 	int selected_command = command_args_values.script_subcmd;
 	int command_required_options = script_params_options[selected_command].priv;
@@ -1648,12 +1806,14 @@ int is_option_required(int option_id) {
 	return option_is_required;
 }
 
-int script_command_is_valid() {
+int script_command_is_valid()
+{
 	int result = SUCCESS;
 	int option_id;
-	cli_option* option = &script_params_options[script_opt_min_id];
+	cli_option *option = &script_params_options[script_opt_min_id];
 
-	for (option_id = script_opt_min_id; option_id < script_opt_max_id; option++, option_id++) {
+	for (option_id = script_opt_min_id; option_id < script_opt_max_id; option++, option_id++)
+	{
 		char option_name[MAX_STR_LEN];
 		int option_is_set = option->priv & (1 << script_opt_flag_set);
 		int option_has_default_value = option->flags & CLI_OPTION_DEFAULT_INT;
@@ -1663,13 +1823,18 @@ int script_command_is_valid() {
 
 		command_name_in_brackets(option_name, MAX_STR_LEN, option->short_name, option->long_name);
 
-		if (option_is_set) {
-			if (!is_option_allowed(option_id)) {
+		if (option_is_set)
+		{
+			if (!is_option_allowed(option_id))
+			{
 				cas_printf(LOG_INFO, "Option '%s' is not allowed\n", option_name);
 				result = FAILURE;
 			}
-		} else {
-			if (is_option_required(option_id)) {
+		}
+		else
+		{
+			if (is_option_required(option_id))
+			{
 				cas_printf(LOG_INFO, "Option '%s' is missing\n", option_name);
 				result = FAILURE;
 			}
@@ -1679,17 +1844,21 @@ int script_command_is_valid() {
 	return result;
 }
 
-int script_handle() {
-	if (script_cmd_unknown == command_args_values.script_subcmd) {
+int script_handle()
+{
+	if (script_cmd_unknown == command_args_values.script_subcmd)
+	{
 		cas_printf(LOG_ERR, "Invalid or missing first sub-command parameter\n");
 		return FAILURE;
 	}
 
-	if (script_command_is_valid() == FAILURE) {
+	if (script_command_is_valid() == FAILURE)
+	{
 		return FAILURE;
 	}
 
-	switch (command_args_values.script_subcmd) {
+	switch (command_args_values.script_subcmd)
+	{
 	case script_cmd_check_cache_device:
 		return check_cache_device(command_args_values.cache_device);
 	case script_cmd_upgrade:
@@ -1700,22 +1869,19 @@ int script_handle() {
 			command_args_values.core_id,
 			command_args_values.core_device,
 			command_args_values.try_add,
-			command_args_values.update_path
-			);
+			command_args_values.update_path);
 	case script_cmd_remove_core:
 		return remove_core(
 			command_args_values.cache_id,
 			command_args_values.core_id,
 			command_args_values.detach,
-			command_args_values.no_flush
-			);
+			command_args_values.no_flush);
 	case script_cmd_purge_cache:
 		return purge_cache(command_args_values.cache_id);
 	case script_cmd_purge_core:
 		return purge_core(
-				command_args_values.cache_id,
-				command_args_values.core_id
-				);
+			command_args_values.cache_id,
+			command_args_values.core_id);
 	}
 
 	return FAILURE;
@@ -1729,16 +1895,18 @@ static cli_option version_options[] = {
 		.args_count = 1,
 		.arg = "FORMAT",
 	},
-	{0}
-};
+	{0}};
 
 int version_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "output-format")) {
+	if (!strcmp(opt, "output-format"))
+	{
 		command_args_values.output_format = validate_str_output_format(arg[0]);
 		if (OUTPUT_FORMAT_INVALID == command_args_values.output_format)
 			return FAILURE;
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -1750,24 +1918,31 @@ static int handle_version(void)
 	char buff[MAX_STR_LEN];
 
 	FILE *intermediate_file[2];
-	if (create_pipe_pair(intermediate_file)) {
-		cas_printf(LOG_ERR,"Failed to create unidirectional pipe.\n");
+	if (create_pipe_pair(intermediate_file))
+	{
+		cas_printf(LOG_ERR, "Failed to create unidirectional pipe.\n");
 		return FAILURE;
 	}
 
 	fprintf(intermediate_file[1], TAG(TABLE_HEADER) "Name,Version\n");
 
 	fprintf(intermediate_file[1], TAG(TABLE_ROW) OCF_LOGO " Cache Kernel Module,");
-	if (cas_module_version(buff, MAX_STR_LEN)) {
+	if (cas_module_version(buff, MAX_STR_LEN))
+	{
 		fprintf(intermediate_file[1], "Not Loaded\n");
-	} else {
+	}
+	else
+	{
 		fprintf(intermediate_file[1], "%s\n", buff);
 	}
 
 	fprintf(intermediate_file[1], TAG(TABLE_ROW) OCF_LOGO " Disk Kernel Module,");
-	if (disk_module_version(buff, MAX_STR_LEN)) {
+	if (disk_module_version(buff, MAX_STR_LEN))
+	{
 		fprintf(intermediate_file[1], "Not Loaded\n");
-	} else {
+	}
+	else
+	{
 		fprintf(intermediate_file[1], "%s\n", buff);
 	}
 
@@ -1775,7 +1950,8 @@ static int handle_version(void)
 	fprintf(intermediate_file[1], "%s\n", CAS_VERSION);
 
 	int format = TEXT;
-	if (OUTPUT_FORMAT_CSV == command_args_values.output_format) {
+	if (OUTPUT_FORMAT_CSV == command_args_values.output_format)
+	{
 		format = RAW_CSV;
 	}
 
@@ -1790,8 +1966,7 @@ static int handle_version(void)
 static cli_option mf_monitor_start_options[] = {
 	{'i', "cache-id", CACHE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
 	{'j', "core-id", CORE_ID_DESC, 1, "ID", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 static int handle_mf_monitor_start(void)
 {
@@ -1802,7 +1977,7 @@ static int handle_mf_monitor_start(void)
 		return FAILURE;
 
 	cas_printf(LOG_INFO, "Started multi-factor monitor thread on cache %d - core %d\n",
-		                 command_args_values.cache_id, command_args_values.core_id);
+			   command_args_values.cache_id, command_args_values.core_id);
 
 	return SUCCESS;
 }
@@ -1826,7 +2001,7 @@ void io_class_help(app *app_values, cli_command *cmd)
 {
 	int i, flag = 0, all_ops, printed_ops;
 	char option_name[MAX_STR_LEN];
-	cli_option* iter = &(cmd->options[0]);
+	cli_option *iter = &(cmd->options[0]);
 
 	/* Print usage */
 	cas_printf(LOG_INFO, "Usage: %s --%s {", app_values->name, cmd->name);
@@ -1835,8 +2010,10 @@ void io_class_help(app *app_values, cli_command *cmd)
 
 	print_command_header(app_values, cmd);
 
-	for (;iter->long_name; iter++, flag++) {
-		if (0 == (iter->flags & CLI_OPTION_DEFAULT_INT)) {
+	for (; iter->long_name; iter++, flag++)
+	{
+		if (0 == (iter->flags & CLI_OPTION_DEFAULT_INT))
+		{
 			continue;
 		}
 
@@ -1845,29 +2022,36 @@ void io_class_help(app *app_values, cli_command *cmd)
 		cas_printf(LOG_INFO, "%s:\n", iter->desc);
 
 		cas_printf(LOG_INFO, "Usage: %s --%s --%s ", app_values->name,
-				cmd->name, iter->long_name);
+				   cmd->name, iter->long_name);
 
 		all_ops = printed_ops = 0;
-		for (i = 0; cmd->options[i].long_name != NULL; i++) {
-			if (0 == cmd->options[i].priv) {
+		for (i = 0; cmd->options[i].long_name != NULL; i++)
+		{
+			if (0 == cmd->options[i].priv)
+			{
 				continue;
 			}
 
-			if (1 == io_class_print_param(&cmd->options[i], (1 << flag))) {
+			if (1 == io_class_print_param(&cmd->options[i], (1 << flag)))
+			{
 				all_ops++;
-			} else {
+			}
+			else
+			{
 				continue;
 			}
 
-			if (1 == io_class_print_param(&cmd->options[i], (1 << io_class_opt_flag_required))) {
+			if (1 == io_class_print_param(&cmd->options[i], (1 << io_class_opt_flag_required)))
+			{
 				printed_ops++;
 			}
 		}
 
 		print_options_usage(cmd->options, " ", io_class_print_param,
-				(1 << flag) | (1 << io_class_opt_flag_required));
+							(1 << flag) | (1 << io_class_opt_flag_required));
 
-		if (all_ops != printed_ops) {
+		if (all_ops != printed_ops)
+		{
 			cas_printf(LOG_INFO, " [option...]");
 		}
 		command_name_in_brackets(option_name, MAX_STR_LEN, iter->short_name, iter->long_name);
@@ -1881,26 +2065,27 @@ void io_class_help(app *app_values, cli_command *cmd)
 
 static int handle_help();
 
-struct {
+struct
+{
 	const char *device;
 } static zero_params = {
-	.device = ""
-};
+	.device = ""};
 
 static cli_option zero_options[] = {
 	{'d', "device", "Path to device on which metadata would be cleared", 1, "DEVICE", CLI_OPTION_REQUIRED},
-	{0}
-};
+	{0}};
 
 /* Parser of option for zeroing metadata command */
 int zero_handle_option(char *opt, const char **arg)
 {
-	if (!strcmp(opt, "device")) {
-		if(validate_device_name(arg[0]) == FAILURE)
+	if (!strcmp(opt, "device"))
+	{
+		if (validate_device_name(arg[0]) == FAILURE)
 			return FAILURE;
 		zero_params.device = arg[0];
-
-	} else {
+	}
+	else
+	{
 		return FAILURE;
 	}
 
@@ -1913,12 +2098,14 @@ int handle_zero()
 
 	cache_device = open(zero_params.device, O_RDONLY);
 
-	if (cache_device < 0) {
+	if (cache_device < 0)
+	{
 		cas_printf(LOG_ERR, "Couldn't open cache device %s.\n", zero_params.device);
 		return FAILURE;
 	}
 
-	if (close(cache_device) < 0) {
+	if (close(cache_device) < 0)
+	{
 		cas_printf(LOG_ERR, "Couldn't close the cache device.\n");
 		return FAILURE;
 	}
@@ -1927,223 +2114,215 @@ int handle_zero()
 }
 
 static cli_command cas_commands[] = {
-		{
-			.name = "start-cache",
-			.short_name = 'S',
-			.desc = "Start new cache instance or load using metadata",
-			.long_desc = NULL,
-			.options = start_options,
-			.command_handle_opts = start_cache_command_handle_option,
-			.handle = handle_start,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "stop-cache",
-			.short_name = 'T',
-			.desc = "Stop cache instance",
-			.long_desc = NULL,
-			.options = stop_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_stop,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "set-param",
-			.short_name = 'X',
-			.desc = "Set various runtime parameters",
-			.long_desc = "Set various runtime parameters",
-			.namespace = &set_param_namespace,
-			.namespace_handle_opts = set_param_namespace_handle_option,
-			.handle = handle_set_param,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "get-param",
-			.short_name = 'G',
-			.desc = "Get various runtime parameters",
-			.long_desc = "Get various runtime parameters",
-			.namespace = &get_param_namespace,
-			.namespace_handle_opts = get_param_namespace_handle_option,
-			.handle = handle_get_param,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "set-cache-mode",
-			.short_name = 'Q',
-			.desc = "Set cache mode",
-			.long_desc = "Set cache mode",
-			.options = set_state_cache_mode_options,
-			.command_handle_opts = set_cache_mode_command_handle_option,
-			.handle = handle_set_cache_mode,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "add-core",
-			.short_name = 'A',
-			.desc = "Add core device to cache instance",
-			.long_desc = NULL,
-			.options = add_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_add,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "remove-core",
-			.short_name = 'R',
-			.desc = "Remove core device from cache instance",
-			.long_desc = NULL,
-			.options = remove_options,
-			.command_handle_opts = remove_core_command_handle_option,
-			.handle = handle_remove,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "remove-detached",
-			.desc = "Remove core device from core pool",
-			.long_desc = NULL,
-			.options = core_pool_remove_options,
-			.command_handle_opts = core_pool_remove_command_handle_option,
-			.handle = handle_core_pool_remove,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "list-caches",
-			.short_name = 'L',
-			.desc = "List all cache instances and core devices",
-			.long_desc = NULL,
-			.options = list_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_list,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "stats",
-			.short_name = 'P',
-			.desc = "Print statistics for cache instance",
-			.long_desc = NULL,
-			.options = stats_options,
-			.command_handle_opts = stats_command_handle_option,
-			.handle = handle_stats,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "reset-counters",
-			.short_name = 'Z',
-			.desc = "Reset cache statistics for core device within cache instance",
-			.long_desc = NULL,
-			.options = reset_counters_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_reset_counters,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "flush-cache",
-			.short_name = 'F',
-			.desc = "Flush all dirty data from the caching device to core devices",
-			.long_desc = NULL,
-			.options = flush_cache_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_flush_cache,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "flush-core",
-			.short_name = 'E',
-			.desc = "Flush dirty data of a given core from the caching device to this core device",
-			.long_desc = NULL,
-			.options = flush_core_options,
-			.command_handle_opts = command_handle_option,
-			.handle = handle_flush_core,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL,
-		},
-		{
-			.name = "io-class",
-			.short_name = 'C',
-			.desc = "Manage IO classes",
-			.long_desc = NULL,
-			.options = io_class_params_options,
-			.command_handle_opts = io_class_handle_option,
-			.handle = io_class_handle,
-			.flags = CLI_SU_REQUIRED,
-			.help = io_class_help,
-		},
-		{
-			.name = "version",
-			.short_name = 'V',
-			.desc = "Print " OCF_LOGO " version",
-			.long_desc = NULL,
-			.options = version_options,
-			.command_handle_opts = version_handle_option,
-			.handle = handle_version,
-			.flags = 0,
-			.help = NULL
-		},
-		/*========== [Orthus FLAG BEGIN] ==========*/
-		{
-			.name = "mf-monitor-start",
-			.short_name = 'M',
-			.desc = "Start a multi-factor caching monitor",
-			.long_desc = NULL,
-			.options = mf_monitor_start_options,
-			.command_handle_opts = command_handle_option,
-			.flags = CLI_SU_REQUIRED,
-			.handle = handle_mf_monitor_start,
-			.help = NULL
-		},
-		{
-			.name = "mf-monitor-stop",
-			.short_name = 'N',
-			.desc = "Stop the running multi-factor caching monitor",
-			.long_desc = NULL,
-			.options = NULL,
-			.command_handle_opts = NULL,
-			.flags = CLI_SU_REQUIRED,
-			.handle = handle_mf_monitor_stop,
-			.help = NULL
-		},
-		/*========== [Orthus FLAG END] ==========*/
-		{
-			.name = "help",
-			.short_name = 'H',
-			.desc = "Print help",
-			.long_desc = NULL,
-			.options = NULL,
-			.command_handle_opts = NULL,
-			.flags = 0,
-			.handle = handle_help,
-			.help = NULL
-		},
-		{
-			.name = "zero-metadata",
-			.desc = "Clear metadata from caching device",
-			.long_desc = NULL,
-			.options = zero_options,
-			.command_handle_opts = zero_handle_option,
-			.handle = handle_zero,
-			.flags = CLI_SU_REQUIRED,
-			.help = NULL
-		},
-		{
-			.name = "script",
-			.options = script_params_options,
-			.command_handle_opts = script_handle_option,
-			.flags = (CLI_COMMAND_HIDDEN | CLI_SU_REQUIRED),
-			.handle = script_handle,
-		},
-		{0},
+	{
+		.name = "start-cache",
+		.short_name = 'S',
+		.desc = "Start new cache instance or load using metadata",
+		.long_desc = NULL,
+		.options = start_options,
+		.command_handle_opts = start_cache_command_handle_option,
+		.handle = handle_start,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "stop-cache",
+		.short_name = 'T',
+		.desc = "Stop cache instance",
+		.long_desc = NULL,
+		.options = stop_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_stop,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "set-param",
+		.short_name = 'X',
+		.desc = "Set various runtime parameters",
+		.long_desc = "Set various runtime parameters",
+		.namespace = &set_param_namespace,
+		.namespace_handle_opts = set_param_namespace_handle_option,
+		.handle = handle_set_param,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "get-param",
+		.short_name = 'G',
+		.desc = "Get various runtime parameters",
+		.long_desc = "Get various runtime parameters",
+		.namespace = &get_param_namespace,
+		.namespace_handle_opts = get_param_namespace_handle_option,
+		.handle = handle_get_param,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "set-cache-mode",
+		.short_name = 'Q',
+		.desc = "Set cache mode",
+		.long_desc = "Set cache mode",
+		.options = set_state_cache_mode_options,
+		.command_handle_opts = set_cache_mode_command_handle_option,
+		.handle = handle_set_cache_mode,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "add-core",
+		.short_name = 'A',
+		.desc = "Add core device to cache instance",
+		.long_desc = NULL,
+		.options = add_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_add,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "remove-core",
+		.short_name = 'R',
+		.desc = "Remove core device from cache instance",
+		.long_desc = NULL,
+		.options = remove_options,
+		.command_handle_opts = remove_core_command_handle_option,
+		.handle = handle_remove,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "remove-detached",
+		.desc = "Remove core device from core pool",
+		.long_desc = NULL,
+		.options = core_pool_remove_options,
+		.command_handle_opts = core_pool_remove_command_handle_option,
+		.handle = handle_core_pool_remove,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "list-caches",
+		.short_name = 'L',
+		.desc = "List all cache instances and core devices",
+		.long_desc = NULL,
+		.options = list_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_list,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "stats",
+		.short_name = 'P',
+		.desc = "Print statistics for cache instance",
+		.long_desc = NULL,
+		.options = stats_options,
+		.command_handle_opts = stats_command_handle_option,
+		.handle = handle_stats,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "reset-counters",
+		.short_name = 'Z',
+		.desc = "Reset cache statistics for core device within cache instance",
+		.long_desc = NULL,
+		.options = reset_counters_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_reset_counters,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "flush-cache",
+		.short_name = 'F',
+		.desc = "Flush all dirty data from the caching device to core devices",
+		.long_desc = NULL,
+		.options = flush_cache_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_flush_cache,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "flush-core",
+		.short_name = 'E',
+		.desc = "Flush dirty data of a given core from the caching device to this core device",
+		.long_desc = NULL,
+		.options = flush_core_options,
+		.command_handle_opts = command_handle_option,
+		.handle = handle_flush_core,
+		.flags = CLI_SU_REQUIRED,
+		.help = NULL,
+	},
+	{
+		.name = "io-class",
+		.short_name = 'C',
+		.desc = "Manage IO classes",
+		.long_desc = NULL,
+		.options = io_class_params_options,
+		.command_handle_opts = io_class_handle_option,
+		.handle = io_class_handle,
+		.flags = CLI_SU_REQUIRED,
+		.help = io_class_help,
+	},
+	{.name = "version",
+	 .short_name = 'V',
+	 .desc = "Print " OCF_LOGO " version",
+	 .long_desc = NULL,
+	 .options = version_options,
+	 .command_handle_opts = version_handle_option,
+	 .handle = handle_version,
+	 .flags = 0,
+	 .help = NULL},
+	/*========== [Orthus FLAG BEGIN] ==========*/
+	{
+		.name = "mf-monitor-start",
+		.short_name = 'M',
+		.desc = "Start a multi-factor caching monitor",
+		.long_desc = NULL,
+		.options = mf_monitor_start_options,
+		.command_handle_opts = command_handle_option,
+		.flags = CLI_SU_REQUIRED,
+		.handle = handle_mf_monitor_start,
+		.help = NULL},
+	{.name = "mf-monitor-stop",
+	 .short_name = 'N',
+	 .desc = "Stop the running multi-factor caching monitor",
+	 .long_desc = NULL,
+	 .options = NULL,
+	 .command_handle_opts = NULL,
+	 .flags = CLI_SU_REQUIRED,
+	 .handle = handle_mf_monitor_stop,
+	 .help = NULL},
+	/*========== [Orthus FLAG END] ==========*/
+	{
+		.name = "help",
+		.short_name = 'H',
+		.desc = "Print help",
+		.long_desc = NULL,
+		.options = NULL,
+		.command_handle_opts = NULL,
+		.flags = 0,
+		.handle = handle_help,
+		.help = NULL},
+	{.name = "zero-metadata",
+	 .desc = "Clear metadata from caching device",
+	 .long_desc = NULL,
+	 .options = zero_options,
+	 .command_handle_opts = zero_handle_option,
+	 .handle = handle_zero,
+	 .flags = CLI_SU_REQUIRED,
+	 .help = NULL},
+	{
+		.name = "script",
+		.options = script_params_options,
+		.command_handle_opts = script_handle_option,
+		.flags = (CLI_COMMAND_HIDDEN | CLI_SU_REQUIRED),
+		.handle = script_handle,
+	},
+	{0},
 };
 
 #define MAN_PAGE "casadm"

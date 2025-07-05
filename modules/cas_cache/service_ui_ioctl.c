@@ -1,47 +1,51 @@
 /*
-* Copyright(c) 2012-2020 Intel Corporation
-* SPDX-License-Identifier: BSD-3-Clause-Clear
-*/
+ * Copyright(c) 2012-2020 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
 
 #include "cas_cache.h"
 #include "utils/cas_err.h"
+#include "netCAS_split.h"
 
-#define _GET_CMD_INFO(cmd_info, arg, size) ({ \
-	cmd_info = vmalloc(size); \
-	if (!cmd_info) \
-		return -ENOMEM; \
-	if (copy_from_user(cmd_info, (void __user *)arg, size)) { \
+#define _GET_CMD_INFO(cmd_info, arg, size) ({                        \
+	cmd_info = vmalloc(size);                                        \
+	if (!cmd_info)                                                   \
+		return -ENOMEM;                                              \
+	if (copy_from_user(cmd_info, (void __user *)arg, size))          \
+	{                                                                \
 		printk(KERN_ALERT "Cannot copy cmd info from user space\n"); \
-		vfree(cmd_info); \
-		return -EINVAL; \
-	} \
+		vfree(cmd_info);                                             \
+		return -EINVAL;                                              \
+	}                                                                \
 })
 
 #define GET_CMD_INFO(cmd_info, arg) _GET_CMD_INFO(cmd_info, arg, \
-		sizeof(*cmd_info))
+												  sizeof(*cmd_info))
 
-#define RETURN_CMD_RESULT(cmd_info, arg, result) ({ \
-	int ret = result; \
-	cmd_info->ext_err_code = abs(result); \
-	if (copy_to_user((void __user *)arg, cmd_info, sizeof(*cmd_info))) { \
-		printk(KERN_ALERT "Unable to copy response to user\n"); \
-		ret = -EFAULT; \
-	} \
-	vfree(cmd_info); \
-	return map_cas_err_to_generic(ret); \
+#define RETURN_CMD_RESULT(cmd_info, arg, result) ({                    \
+	int ret = result;                                                  \
+	cmd_info->ext_err_code = abs(result);                              \
+	if (copy_to_user((void __user *)arg, cmd_info, sizeof(*cmd_info))) \
+	{                                                                  \
+		printk(KERN_ALERT "Unable to copy response to user\n");        \
+		ret = -EFAULT;                                                 \
+	}                                                                  \
+	vfree(cmd_info);                                                   \
+	return map_cas_err_to_generic(ret);                                \
 })
 
 /* this handles IOctl for /dev/cas */
 /*********************************************/
 long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
-		unsigned long arg)
+							unsigned long arg)
 {
 	int retval = 0;
 
 	if (_IOC_TYPE(cmd) != KCAS_IOCTL_MAGIC)
 		return -EINVAL;
 
-	if (!capable(CAP_SYS_ADMIN)) {
+	if (!capable(CAP_SYS_ADMIN))
+	{
 		/* Must be root to issue ioctls */
 		return -EPERM;
 	}
@@ -51,12 +55,15 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		cmd != KCAS_IOCTL_LIST_CACHE &&
 		cmd != KCAS_IOCTL_GET_CACHE_COUNT &&
 		cmd != KCAS_IOCTL_CORE_INFO &&
-		cmd != KCAS_IOCTL_PARTITION_INFO) {
+		cmd != KCAS_IOCTL_PARTITION_INFO)
+	{
 		return -EFAULT;
 	}
 
-	switch (cmd) {
-	case KCAS_IOCTL_START_CACHE: {
+	switch (cmd)
+	{
+	case KCAS_IOCTL_START_CACHE:
+	{
 		struct kcas_start_cache *cmd_info;
 		struct ocf_mngt_cache_config cfg;
 		struct ocf_mngt_cache_device_config device_cfg;
@@ -65,7 +72,7 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		GET_CMD_INFO(cmd_info, arg);
 
 		retval = cache_mngt_prepare_cache_cfg(&cfg, &device_cfg,
-				&atomic_params, cmd_info);
+											  &atomic_params, cmd_info);
 		if (retval)
 			RETURN_CMD_RESULT(cmd_info, arg, retval);
 
@@ -74,7 +81,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_STOP_CACHE: {
+	case KCAS_IOCTL_STOP_CACHE:
+	{
 		struct kcas_stop_cache *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -83,12 +91,13 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		cache_name_from_id(cache_name, cmd_info->cache_id);
 
 		retval = cache_mngt_exit_instance(cache_name, OCF_CACHE_NAME_SIZE,
-				cmd_info->flush_data);
+										  cmd_info->flush_data);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_SET_CACHE_STATE: {
+	case KCAS_IOCTL_SET_CACHE_STATE:
+	{
 		struct kcas_set_cache_state *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -97,13 +106,14 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		cache_name_from_id(cache_name, cmd_info->cache_id);
 
 		retval = cache_mngt_set_cache_mode(cache_name,
-				OCF_CACHE_NAME_SIZE, cmd_info->caching_mode,
-				cmd_info->flush_data);
+										   OCF_CACHE_NAME_SIZE, cmd_info->caching_mode,
+										   cmd_info->flush_data);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_INSERT_CORE: {
+	case KCAS_IOCTL_INSERT_CORE:
+	{
 		struct kcas_insert_core *cmd_info;
 		struct ocf_mngt_core_config cfg;
 		char cache_name[OCF_CACHE_NAME_SIZE];
@@ -117,12 +127,13 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 			RETURN_CMD_RESULT(cmd_info, arg, retval);
 
 		retval = cache_mngt_add_core_to_cache(cache_name,
-					OCF_CACHE_NAME_SIZE, &cfg, cmd_info);
+											  OCF_CACHE_NAME_SIZE, &cfg, cmd_info);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_REMOVE_CORE: {
+	case KCAS_IOCTL_REMOVE_CORE:
+	{
 		struct kcas_remove_core *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -132,7 +143,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_RESET_STATS: {
+	case KCAS_IOCTL_RESET_STATS:
+	{
 		struct kcas_reset_stats *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 		char core_name[OCF_CORE_NAME_SIZE];
@@ -145,15 +157,14 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 			core_name_from_id(core_name, cmd_info->core_id);
 
 		retval = cache_mngt_reset_stats(cache_name, OCF_CACHE_NAME_SIZE,
-				cmd_info->core_id != OCF_CORE_ID_INVALID ?
-						core_name : NULL,
-				cmd_info->core_id != OCF_CORE_ID_INVALID ?
-						OCF_CORE_NAME_SIZE : 0);
+										cmd_info->core_id != OCF_CORE_ID_INVALID ? core_name : NULL,
+										cmd_info->core_id != OCF_CORE_ID_INVALID ? OCF_CORE_NAME_SIZE : 0);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_PURGE_CACHE: {
+	case KCAS_IOCTL_PURGE_CACHE:
+	{
 		struct kcas_flush_cache *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -166,7 +177,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_FLUSH_CACHE: {
+	case KCAS_IOCTL_FLUSH_CACHE:
+	{
 		struct kcas_flush_cache *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -179,7 +191,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_INTERRUPT_FLUSHING: {
+	case KCAS_IOCTL_INTERRUPT_FLUSHING:
+	{
 		struct kcas_interrupt_flushing *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -188,12 +201,13 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		cache_name_from_id(cache_name, cmd_info->cache_id);
 
 		retval = cache_mngt_interrupt_flushing(cache_name,
-						OCF_CACHE_NAME_SIZE);
+											   OCF_CACHE_NAME_SIZE);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_PURGE_CORE: {
+	case KCAS_IOCTL_PURGE_CORE:
+	{
 		struct kcas_flush_core *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 		char core_name[OCF_CORE_NAME_SIZE];
@@ -205,12 +219,13 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		core_name_from_id(core_name, cmd_info->core_id);
 
 		retval = cache_mngt_purge_object(cache_name, OCF_CACHE_NAME_SIZE,
-						core_name, OCF_CORE_NAME_SIZE);
+										 core_name, OCF_CORE_NAME_SIZE);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_FLUSH_CORE: {
+	case KCAS_IOCTL_FLUSH_CORE:
+	{
 		struct kcas_flush_core *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 		char core_name[OCF_CORE_NAME_SIZE];
@@ -222,12 +237,13 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		core_name_from_id(core_name, cmd_info->core_id);
 
 		retval = cache_mngt_flush_object(cache_name, OCF_CACHE_NAME_SIZE,
-						core_name, OCF_CORE_NAME_SIZE);
+										 core_name, OCF_CORE_NAME_SIZE);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_GET_STATS: {
+	case KCAS_IOCTL_GET_STATS:
+	{
 		struct kcas_get_stats *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -237,7 +253,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_CACHE_INFO: {
+	case KCAS_IOCTL_CACHE_INFO:
+	{
 		struct kcas_cache_info *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -247,7 +264,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_CORE_INFO: {
+	case KCAS_IOCTL_CORE_INFO:
+	{
 		struct kcas_core_info *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -257,7 +275,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_PARTITION_INFO: {
+	case KCAS_IOCTL_PARTITION_INFO:
+	{
 		struct kcas_io_class *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -265,10 +284,10 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		retval = cache_mngt_get_io_class_info(cmd_info);
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
-
 	}
 
-	case KCAS_IOCTL_PARTITION_SET: {
+	case KCAS_IOCTL_PARTITION_SET:
+	{
 		struct kcas_io_classes *cmd_info;
 		char cache_name[OCF_CACHE_NAME_SIZE];
 
@@ -279,13 +298,14 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		cache_name_from_id(cache_name, cmd_info->cache_id);
 
 		retval = cache_mngt_set_partitions(cache_name,
-						OCF_CACHE_NAME_SIZE, cmd_info);
+										   OCF_CACHE_NAME_SIZE, cmd_info);
 
 		/* return just sizeof(struct kcas_io_classes) bytes of data */
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_GET_CACHE_COUNT: {
+	case KCAS_IOCTL_GET_CACHE_COUNT:
+	{
 		struct kcas_cache_count *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -295,7 +315,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, 0);
 	}
 
-	case KCAS_IOCTL_LIST_CACHE: {
+	case KCAS_IOCTL_LIST_CACHE:
+	{
 		struct kcas_cache_list *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -305,7 +326,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval > 0 ? 0 : retval);
 	}
 
-	case KCAS_IOCTL_UPGRADE: {
+	case KCAS_IOCTL_UPGRADE:
+	{
 		struct kcas_upgrade *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -315,18 +337,20 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
 
-	case KCAS_IOCTL_GET_CORE_POOL_COUNT: {
+	case KCAS_IOCTL_GET_CORE_POOL_COUNT:
+	{
 		struct kcas_core_pool_count *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
 
 		cmd_info->core_pool_count =
-				ocf_mngt_core_pool_get_count(cas_ctx);
+			ocf_mngt_core_pool_get_count(cas_ctx);
 
 		RETURN_CMD_RESULT(cmd_info, arg, 0);
 	}
 
-	case KCAS_IOCTL_GET_CORE_POOL_PATHS: {
+	case KCAS_IOCTL_GET_CORE_POOL_PATHS:
+	{
 		struct kcas_core_pool_path *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -335,7 +359,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_CORE_POOL_REMOVE: {
+	case KCAS_IOCTL_CORE_POOL_REMOVE:
+	{
 		struct kcas_core_pool_remove *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -344,7 +369,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_CACHE_CHECK_DEVICE: {
+	case KCAS_IOCTL_CACHE_CHECK_DEVICE:
+	{
 		struct kcas_cache_check_device *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -353,7 +379,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_SET_CORE_PARAM: {
+	case KCAS_IOCTL_SET_CORE_PARAM:
+	{
 		struct kcas_set_core_param *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -362,7 +389,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_GET_CORE_PARAM: {
+	case KCAS_IOCTL_GET_CORE_PARAM:
+	{
 		struct kcas_get_core_param *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -371,7 +399,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_SET_CACHE_PARAM: {
+	case KCAS_IOCTL_SET_CACHE_PARAM:
+	{
 		struct kcas_set_cache_param *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -380,7 +409,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_GET_CACHE_PARAM: {
+	case KCAS_IOCTL_GET_CACHE_PARAM:
+	{
 		struct kcas_get_cache_param *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -391,7 +421,8 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 	}
 
 	/*========== [Orthus FLAG BEGIN] ==========*/
-	case KCAS_IOCTL_MF_MONITOR_START: {
+	case KCAS_IOCTL_MF_MONITOR_START:
+	{
 		struct kcas_mf_monitor_start *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
@@ -400,16 +431,24 @@ long cas_service_ioctl_ctrl(struct file *filp, unsigned int cmd,
 
 		RETURN_CMD_RESULT(cmd_info, arg, retval);
 	}
-	case KCAS_IOCTL_MF_MONITOR_STOP: {
+	case KCAS_IOCTL_MF_MONITOR_STOP:
+	{
 		struct kcas_mf_monitor_stop *cmd_info;
 
 		GET_CMD_INFO(cmd_info, arg);
 
-		ocf_mngt_mf_monitor_stop();
+		if (USING_NETCAS_SPLIT)
+		{
+			netcas_mngt_split_monitor_stop();
+		}
+		else
+		{
+			ocf_mngt_mf_monitor_stop();
+		}
 
 		RETURN_CMD_RESULT(cmd_info, arg, 0);
 	}
-	/*========== [Orthus FLAG END] ==========*/
+		/*========== [Orthus FLAG END] ==========*/
 
 	default:
 		printk(KERN_ALERT "DEBUG: cmd code = %u\n", cmd);
