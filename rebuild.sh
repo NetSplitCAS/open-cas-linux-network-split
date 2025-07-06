@@ -28,10 +28,11 @@
 
 cd ../shell
 sudo ./teardown_opencas_pmem.sh
-cd ../open-cas-linux
+cd ../open-cas-linux-network-split
 
 echo "sudo rmmod cas_cache..."
 sudo rmmod cas_cache
+sudo rmmod cas_disk
 
 echo "Cleaning previous build..."
 sudo make clean
@@ -43,6 +44,7 @@ echo "Installing with DEBUG=1..."
 sudo make install DEBUG=1 -j 30
 
 echo "sudo modprobe cas_cache..."
+sudo modprobe cas_disk
 sudo modprobe cas_cache
 
 echo "Build process completed!"

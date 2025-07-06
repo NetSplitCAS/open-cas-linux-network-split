@@ -5,7 +5,6 @@
 
 #include "cas_cache.h"
 #include "utils/cas_err.h"
-#include "netCAS_split.h"
 
 #define _GET_CMD_INFO(cmd_info, arg, size) ({                        \
 	cmd_info = vmalloc(size);                                        \

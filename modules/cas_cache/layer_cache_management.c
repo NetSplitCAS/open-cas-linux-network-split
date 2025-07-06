@@ -6,7 +6,6 @@
 #include "cas_cache.h"
 #include "utils/utils_blk.h"
 #include "threads.h"
-#include "netCAS_split.h"
 
 extern u32 max_writeback_queue_size;
 extern u32 writeback_queue_unblock_size;
